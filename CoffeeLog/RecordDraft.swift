@@ -1,3 +1,5 @@
+import Foundation
+
 /// 入力画面で編集中の記録。保存できるかどうかを判定する。
 struct RecordDraft {
     var name: String = ""
@@ -5,6 +7,6 @@ struct RecordDraft {
     var rating: Int? = nil
 
     var canSave: Bool {
-        false
+        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 }
