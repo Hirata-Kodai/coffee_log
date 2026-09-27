@@ -6,7 +6,7 @@ import Testing
 // - [x] 文字があればそのまま返す
 // - [x] 空白だけ（半角・全角・改行）は nil になる
 // - [x] 前後の空白は取り除く
-// - [ ] 途中の空白は残す
+// - [x] 途中の空白は残す
 struct NilIfBlankTests {
     @Test func 空文字はnilになる() {
         #expect("".nilIfBlank == nil)
@@ -23,5 +23,9 @@ struct NilIfBlankTests {
 
     @Test func 前後の空白は取り除く() {
         #expect(" 村上コーヒー\u{3000}".nilIfBlank == "村上コーヒー")
+    }
+
+    @Test func 途中の空白は残す() {
+        #expect(" ケニア AB ".nilIfBlank == "ケニア AB")
     }
 }
