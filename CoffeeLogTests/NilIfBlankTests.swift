@@ -4,7 +4,7 @@ import Testing
 // TODO（任意の文字列の空欄を nil にそろえる）
 // - [x] 空文字は nil になる
 // - [x] 文字があればそのまま返す
-// - [ ] 空白だけ（半角・全角・改行）は nil になる
+// - [x] 空白だけ（半角・全角・改行）は nil になる
 // - [ ] 前後の空白は取り除く
 // - [ ] 途中の空白は残す
 struct NilIfBlankTests {
@@ -14,5 +14,10 @@ struct NilIfBlankTests {
 
     @Test func 文字があればそのまま返す() {
         #expect("村上コーヒー".nilIfBlank == "村上コーヒー")
+    }
+
+    @Test(arguments: ["   ", "\u{3000}", "\n"])
+    func 空白だけならnilになる(value: String) {
+        #expect(value.nilIfBlank == nil)
     }
 }
