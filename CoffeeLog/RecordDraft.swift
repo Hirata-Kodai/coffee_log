@@ -15,7 +15,7 @@ struct RecordDraft {
 
     /// 保存できない下書きなら nil。now は作成日時になる
     func makeRecord(now: Date) -> CoffeeRecord? {
-        guard let rating else { return nil }
+        guard let name = name.nilIfBlank, let rating else { return nil }
         return CoffeeRecord(name: name, rating: rating, date: date, createdAt: now)
     }
 
