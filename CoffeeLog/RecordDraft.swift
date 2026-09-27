@@ -13,10 +13,10 @@ struct RecordDraft {
         hasName && hasValidRating
     }
 
-    /// 保存できない下書きなら nil。now は作成日時になる
-    func makeRecord(now: Date) -> CoffeeRecord? {
+    /// 保存できない下書きなら nil。now は作成日時になる。日付は calendar でその日の 0 時にそろえる
+    func makeRecord(now: Date, calendar: Calendar = .current) -> CoffeeRecord? {
         guard let name = name.nilIfBlank, let rating else { return nil }
-        return CoffeeRecord(name: name, rating: rating, date: date, createdAt: now)
+        return CoffeeRecord(name: name, rating: rating, date: calendar.startOfDay(for: date), createdAt: now)
     }
 
     private var hasName: Bool {
