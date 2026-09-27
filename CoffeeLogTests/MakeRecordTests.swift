@@ -6,7 +6,7 @@ import Testing
 // - [x] 名称・評価・作成日時を持つ記録を作れる
 // - [x] 名称は前後の空白を除いて保存する
 // - [x] 日付はその日の 0 時にそろえる
-// - [ ] 任意の文字列項目（店・容量・生産国・品種・メモ）は前後の空白を除き、空欄は nil にする
+// - [x] 任意の文字列項目（店・容量・生産国・品種・メモ）は前後の空白を除き、空欄は nil にする
 // - [ ] 価格は空欄なら nil、数字なら Int にする
 // - [ ] 購入形態・焙煎度・写真・味 6 軸はそのまま引き継ぐ
 // - [ ] 保存できない下書きからは作れない
@@ -42,5 +42,39 @@ struct MakeRecordTests {
         let record = try #require(draft.makeRecord(now: now, calendar: calendar))
 
         #expect(record.date == midnight)
+    }
+
+    @Test func 任意の文字列項目は前後の空白を除いて保存する() throws {
+        var draft = RecordDraft(name: "ケニア AB", rating: 4)
+        draft.shop = " 村上コーヒー "
+        draft.volume = "100g\n"
+        draft.origin = "\u{3000}ケニア"
+        draft.variety = " SL28 "
+        draft.memo = " ベリーの香り\n後味が長い \n"
+
+        let record = try #require(draft.makeRecord(now: now))
+
+        #expect(record.shop == "村上コーヒー")
+        #expect(record.volume == "100g")
+        #expect(record.origin == "ケニア")
+        #expect(record.variety == "SL28")
+        #expect(record.memo == "ベリーの香り\n後味が長い")
+    }
+
+    @Test func 任意の文字列項目は空欄ならnilにする() throws {
+        var draft = RecordDraft(name: "ケニア AB", rating: 4)
+        draft.shop = ""
+        draft.volume = " "
+        draft.origin = "\u{3000}"
+        draft.variety = "\n"
+        draft.memo = " \n "
+
+        let record = try #require(draft.makeRecord(now: now))
+
+        #expect(record.shop == nil)
+        #expect(record.volume == nil)
+        #expect(record.origin == nil)
+        #expect(record.variety == nil)
+        #expect(record.memo == nil)
     }
 }
