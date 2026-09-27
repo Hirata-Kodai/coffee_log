@@ -8,7 +8,7 @@ import Testing
 // - [x] 日付はその日の 0 時にそろえる
 // - [x] 任意の文字列項目（店・容量・生産国・品種・メモ）は前後の空白を除き、空欄は nil にする
 // - [x] 価格は空欄なら nil、数字なら Int にする
-// - [ ] 購入形態・焙煎度・写真・味 6 軸はそのまま引き継ぐ
+// - [x] 購入形態・焙煎度・写真・味 6 軸はそのまま引き継ぐ
 // - [ ] 保存できない下書きからは作れない
 @MainActor
 struct MakeRecordTests {
@@ -96,5 +96,26 @@ struct MakeRecordTests {
         let record = try #require(draft.makeRecord(now: now))
 
         #expect(record.price == nil)
+    }
+
+    @Test func 購入形態と焙煎度と写真と味6軸はそのまま引き継ぐ() throws {
+        var draft = RecordDraft(name: "ケニア AB", rating: 4)
+        draft.purchaseType = .bean
+        draft.roast = .mediumDark
+        draft.photo = Data([0x01, 0x02])
+        draft.aroma = 4
+        draft.acidity = 3
+        draft.sweetness = 2
+        draft.body = 5
+        draft.aftertaste = 1
+        draft.bitterness = nil
+
+        let record = try #require(draft.makeRecord(now: now))
+
+        #expect(record.purchaseType == .bean)
+        #expect(record.roast == .mediumDark)
+        #expect(record.photo == Data([0x01, 0x02]))
+        #expect([record.aroma, record.acidity, record.sweetness,
+                 record.body, record.aftertaste, record.bitterness] == [4, 3, 2, 5, 1, nil])
     }
 }

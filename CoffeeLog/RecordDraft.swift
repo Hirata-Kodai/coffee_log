@@ -18,6 +18,18 @@ struct RecordDraft {
     /// 価格（円）の入力欄の文字列。空欄は未入力
     var priceText: String = ""
 
+    var purchaseType: PurchaseType? = nil
+    var roast: Roast? = nil
+    var photo: Data? = nil
+
+    // 味 6 軸。各 1〜5、nil は未入力
+    var aroma: Int? = nil
+    var acidity: Int? = nil
+    var sweetness: Int? = nil
+    var body: Int? = nil
+    var aftertaste: Int? = nil
+    var bitterness: Int? = nil
+
     var canSave: Bool {
         hasName && hasValidRating && hasValidPrice
     }
@@ -32,6 +44,15 @@ struct RecordDraft {
         record.variety = variety.nilIfBlank
         record.memo = memo.nilIfBlank
         record.price = price
+        record.purchaseType = purchaseType
+        record.roast = roast
+        record.photo = photo
+        record.aroma = aroma
+        record.acidity = acidity
+        record.sweetness = sweetness
+        record.body = body
+        record.aftertaste = aftertaste
+        record.bitterness = bitterness
         return record
     }
 
