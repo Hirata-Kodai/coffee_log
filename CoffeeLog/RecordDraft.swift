@@ -13,7 +13,7 @@ struct RecordDraft {
     }
 
     private var hasName: Bool {
-        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        name.nilIfBlank != nil
     }
 
     private var hasValidRating: Bool {
