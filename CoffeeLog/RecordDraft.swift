@@ -36,7 +36,7 @@ struct RecordDraft {
 
     /// 保存できない下書きなら nil。now は作成日時になる。日付は calendar でその日の 0 時にそろえる
     func makeRecord(now: Date, calendar: Calendar = .current) -> CoffeeRecord? {
-        guard let name = name.nilIfBlank, let rating else { return nil }
+        guard canSave, let name = name.nilIfBlank, let rating else { return nil }
         let record = CoffeeRecord(name: name, rating: rating, date: calendar.startOfDay(for: date), createdAt: now)
         record.shop = shop.nilIfBlank
         record.volume = volume.nilIfBlank

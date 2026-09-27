@@ -9,7 +9,7 @@ import Testing
 // - [x] 任意の文字列項目（店・容量・生産国・品種・メモ）は前後の空白を除き、空欄は nil にする
 // - [x] 価格は空欄なら nil、数字なら Int にする
 // - [x] 購入形態・焙煎度・写真・味 6 軸はそのまま引き継ぐ
-// - [ ] 保存できない下書きからは作れない
+// - [x] 保存できない下書きからは作れない
 @MainActor
 struct MakeRecordTests {
     private let now = Date(timeIntervalSince1970: 1_790_000_100)
@@ -117,5 +117,15 @@ struct MakeRecordTests {
         #expect(record.photo == Data([0x01, 0x02]))
         #expect([record.aroma, record.acidity, record.sweetness,
                  record.body, record.aftertaste, record.bitterness] == [4, 3, 2, 5, 1, nil])
+    }
+
+    @Test(arguments: [
+        RecordDraft(name: " ", rating: 4),
+        RecordDraft(name: "ケニア AB", rating: nil),
+        RecordDraft(name: "ケニア AB", rating: 6),
+        RecordDraft(name: "ケニア AB", rating: 4, priceText: "-100"),
+    ])
+    func 保存できない下書きからは作れない(draft: RecordDraft) {
+        #expect(draft.makeRecord(now: now) == nil)
     }
 }
