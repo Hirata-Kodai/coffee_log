@@ -15,6 +15,8 @@ struct RecordDraft {
     var origin: String = ""
     var variety: String = ""
     var memo: String = ""
+    /// 価格（円）の入力欄の文字列。空欄は未入力
+    var priceText: String = ""
 
     var canSave: Bool {
         hasName && hasValidRating
@@ -29,7 +31,13 @@ struct RecordDraft {
         record.origin = origin.nilIfBlank
         record.variety = variety.nilIfBlank
         record.memo = memo.nilIfBlank
+        record.price = price
         return record
+    }
+
+    /// 空欄なら nil
+    private var price: Int? {
+        priceText.nilIfBlank.flatMap { Int($0) }
     }
 
     private var hasName: Bool {

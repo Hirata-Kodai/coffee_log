@@ -7,7 +7,7 @@ import Testing
 // - [x] 名称は前後の空白を除いて保存する
 // - [x] 日付はその日の 0 時にそろえる
 // - [x] 任意の文字列項目（店・容量・生産国・品種・メモ）は前後の空白を除き、空欄は nil にする
-// - [ ] 価格は空欄なら nil、数字なら Int にする
+// - [x] 価格は空欄なら nil、数字なら Int にする
 // - [ ] 購入形態・焙煎度・写真・味 6 軸はそのまま引き継ぐ
 // - [ ] 保存できない下書きからは作れない
 @MainActor
@@ -76,5 +76,25 @@ struct MakeRecordTests {
         #expect(record.origin == nil)
         #expect(record.variety == nil)
         #expect(record.memo == nil)
+    }
+
+    @Test(arguments: [("1200", 1200), (" 1200 ", 1200), ("0", 0)])
+    func 価格は数字ならIntにして保存する(priceText: String, expected: Int) throws {
+        var draft = RecordDraft(name: "ケニア AB", rating: 4)
+        draft.priceText = priceText
+
+        let record = try #require(draft.makeRecord(now: now))
+
+        #expect(record.price == expected)
+    }
+
+    @Test(arguments: ["", " "])
+    func 価格は空欄ならnilにする(priceText: String) throws {
+        var draft = RecordDraft(name: "ケニア AB", rating: 4)
+        draft.priceText = priceText
+
+        let record = try #require(draft.makeRecord(now: now))
+
+        #expect(record.price == nil)
     }
 }
