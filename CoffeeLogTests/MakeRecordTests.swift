@@ -1,0 +1,26 @@
+import Foundation
+import Testing
+@testable import CoffeeLog
+
+// TODO（RecordDraft → CoffeeRecord の変換）
+// - [x] 名称・評価・作成日時を持つ記録を作れる
+// - [ ] 名称は前後の空白を除いて保存する
+// - [ ] 日付はその日の 0 時にそろえる
+// - [ ] 任意の文字列項目（店・容量・生産国・品種・メモ）は前後の空白を除き、空欄は nil にする
+// - [ ] 価格は空欄なら nil、数字なら Int にする
+// - [ ] 購入形態・焙煎度・写真・味 6 軸はそのまま引き継ぐ
+// - [ ] 保存できない下書きからは作れない
+@MainActor
+struct MakeRecordTests {
+    private let now = Date(timeIntervalSince1970: 1_790_000_100)
+
+    @Test func 名称と評価と作成日時を持つ記録を作れる() throws {
+        let draft = RecordDraft(name: "ケニア AB", rating: 4)
+
+        let record = try #require(draft.makeRecord(now: now))
+
+        #expect(record.name == "ケニア AB")
+        #expect(record.rating == 4)
+        #expect(record.createdAt == now)
+    }
+}
