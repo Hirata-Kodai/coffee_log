@@ -7,6 +7,6 @@ struct RecordDraft {
     var rating: Int? = nil
 
     var canSave: Bool {
-        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && rating != nil
     }
 }
