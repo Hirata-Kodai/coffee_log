@@ -19,7 +19,7 @@ struct RecordDraft {
     var priceText: String = ""
 
     var canSave: Bool {
-        hasName && hasValidRating
+        hasName && hasValidRating && hasValidPrice
     }
 
     /// 保存できない下書きなら nil。now は作成日時になる。日付は calendar でその日の 0 時にそろえる
@@ -47,5 +47,12 @@ struct RecordDraft {
     private var hasValidRating: Bool {
         guard let rating else { return false }
         return Self.ratingRange.contains(rating)
+    }
+
+    /// 空欄は有効。入力があれば 0 以上の整数として読めること
+    private var hasValidPrice: Bool {
+        guard priceText.nilIfBlank != nil else { return true }
+        guard let price else { return false }
+        return price >= 0
     }
 }
