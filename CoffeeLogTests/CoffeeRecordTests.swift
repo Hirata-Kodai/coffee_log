@@ -5,7 +5,7 @@ import Testing
 
 // TODO（CoffeeRecord のモデル定義）
 // - [x] スキーマ v1 で全項目を保存して読み出せる
-// - [ ] 購入形態・焙煎度は enum で読み書きでき、保存は文字列になる
+// - [x] 購入形態・焙煎度は enum で読み書きでき、保存は文字列になる
 @MainActor
 struct CoffeeRecordTests {
     /// ModelContainer が解放されると context も使えなくなるので、container ごと返して保持する
@@ -57,5 +57,19 @@ struct CoffeeRecordTests {
         #expect(fetched.origin == "ケニア")
         #expect(fetched.variety == "SL28")
         #expect(fetched.memo == "ベリーの香り")
+    }
+
+    @Test func 購入形態と焙煎度はenumで読み書きでき保存は文字列になる() {
+        let record = CoffeeRecord(name: "タンザニア", rating: 3, date: .now, createdAt: .now)
+        record.purchaseType = .cafe
+        record.roast = .mediumDark
+
+        #expect(record.purchaseTypeRaw == "cafe")
+        #expect(record.roastRaw == "mediumDark")
+        #expect(record.purchaseType == .cafe)
+        #expect(record.roast == .mediumDark)
+
+        record.purchaseType = nil
+        #expect(record.purchaseTypeRaw == nil)
     }
 }
