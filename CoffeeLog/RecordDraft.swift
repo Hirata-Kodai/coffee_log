@@ -77,3 +77,29 @@ struct RecordDraft {
         return price >= 0
     }
 }
+
+extension RecordDraft {
+    /// 編集用に既存の記録から下書きを作る。未入力の文字列は空欄、価格は入力欄の文字列にする
+    init(record: CoffeeRecord) {
+        self.init(
+            name: record.name,
+            rating: record.rating,
+            date: record.date,
+            shop: record.shop ?? "",
+            volume: record.volume ?? "",
+            origin: record.origin ?? "",
+            variety: record.variety ?? "",
+            memo: record.memo ?? "",
+            priceText: record.price.map(String.init) ?? "",
+            purchaseType: record.purchaseType,
+            roast: record.roast,
+            photo: record.photo,
+            aroma: record.aroma,
+            acidity: record.acidity,
+            sweetness: record.sweetness,
+            body: record.body,
+            aftertaste: record.aftertaste,
+            bitterness: record.bitterness
+        )
+    }
+}
