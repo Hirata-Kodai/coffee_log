@@ -1,6 +1,6 @@
 import Foundation
 
-/// 入力画面で編集中の記録。保存できるかどうかを判定し、保存用の CoffeeRecord を作る。
+/// 入力画面で編集中の記録。保存できるかどうかを判定し、CoffeeRecord の新規作成と編集の反映を行う。
 struct RecordDraft {
     static let ratingRange = 1...5
 
