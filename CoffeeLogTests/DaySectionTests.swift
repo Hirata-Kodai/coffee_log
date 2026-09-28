@@ -6,7 +6,7 @@ import Testing
 // - [x] 記録がなければまとまりもない
 // - [x] 同じ日の記録は 1 つのまとまりにし、並びを保つ
 // - [x] 日が変わるたびに新しいまとまりを作り、並びを保つ
-// - [ ] 日の区切りは calendar のタイムゾーンで決め、まとまりの日付はその日の 0 時
+// - [x] 日の区切りは calendar のタイムゾーンで決め、まとまりの日付はその日の 0 時
 @MainActor
 struct DaySectionTests {
     private static let calendar: Calendar = {
@@ -50,5 +50,16 @@ struct DaySectionTests {
 
         #expect(sections.map(\.day) == [date(day: 25), date(day: 24), date(day: 20)])
         #expect(sections.map { $0.records.map(\.name) } == [["A", "B"], ["C"], ["D"]])
+    }
+
+    @Test func 日の区切りはcalendarのタイムゾーンで決めまとまりの日付はその日の0時() {
+        // UTC では 24 日 16 時と 25 日 14 時で別の日になる組み合わせ
+        let sections = DaySection.group([
+            record("夜", date(day: 25, hour: 23)),
+            record("朝", date(day: 25, hour: 1)),
+        ], calendar: Self.calendar)
+
+        #expect(sections.map(\.day) == [date(day: 25)])
+        #expect(sections.map { $0.records.map(\.name) } == [["夜", "朝"]])
     }
 }
