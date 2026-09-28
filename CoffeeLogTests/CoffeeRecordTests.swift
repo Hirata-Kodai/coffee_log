@@ -8,17 +8,9 @@ import Testing
 // - [x] 購入形態・焙煎度は enum で読み書きでき、保存は文字列になる
 @MainActor
 struct CoffeeRecordTests {
-    /// ModelContainer が解放されると context も使えなくなるので、container ごと返して保持する
-    private func makeContainer() throws -> ModelContainer {
-        try ModelContainer(
-            for: Schema(versionedSchema: CoffeeSchemaV1.self),
-            migrationPlan: CoffeeMigrationPlan.self,
-            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-        )
-    }
-
     @Test func スキーマv1で全項目を保存して読み出せる() throws {
-        let container = try makeContainer()
+        // ModelContainer が解放されると context も使えなくなるので、container を保持する
+        let container = try ModelContainer.coffeeLog(inMemory: true)
         let context = container.mainContext
         let date = Date(timeIntervalSince1970: 1_790_000_000)
         let createdAt = Date(timeIntervalSince1970: 1_790_000_100)
