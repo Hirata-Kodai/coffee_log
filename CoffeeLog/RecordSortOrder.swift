@@ -7,6 +7,7 @@ enum RecordSortOrder: String {
 
     var sortDescriptors: [SortDescriptor<CoffeeRecord>] {
         [SortDescriptor(\.rating, order: .reverse),
-         SortDescriptor(\.date, order: .reverse)]
+         SortDescriptor(\.date, order: .reverse),
+         SortDescriptor(\.createdAt, order: .reverse)]
     }
 }
