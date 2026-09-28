@@ -6,7 +6,14 @@ struct DaySection {
     let records: [CoffeeRecord]
 
     static func group(_ records: [CoffeeRecord], calendar: Calendar) -> [DaySection] {
-        guard let first = records.first else { return [] }
-        return [DaySection(day: first.date, records: records)]
+        var sections: [DaySection] = []
+        for record in records {
+            if let last = sections.last, last.day == record.date {
+                sections[sections.count - 1] = DaySection(day: last.day, records: last.records + [record])
+            } else {
+                sections.append(DaySection(day: record.date, records: [record]))
+            }
+        }
+        return sections
     }
 }

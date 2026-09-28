@@ -5,7 +5,7 @@ import Testing
 // TODO（新しい順の一覧を日付ごとにまとめる）
 // - [x] 記録がなければまとまりもない
 // - [x] 同じ日の記録は 1 つのまとまりにし、並びを保つ
-// - [ ] 日が変わるたびに新しいまとまりを作り、並びを保つ
+// - [x] 日が変わるたびに新しいまとまりを作り、並びを保つ
 // - [ ] 日の区切りは calendar のタイムゾーンで決め、まとまりの日付はその日の 0 時
 @MainActor
 struct DaySectionTests {
@@ -38,5 +38,17 @@ struct DaySectionTests {
         #expect(sections.count == 1)
         #expect(section.day == date(day: 25))
         #expect(section.records.map(\.name) == ["A", "B"])
+    }
+
+    @Test func 日が変わるたびに新しいまとまりを作り並びを保つ() {
+        let sections = DaySection.group([
+            record("A", date(day: 25)),
+            record("B", date(day: 25)),
+            record("C", date(day: 24)),
+            record("D", date(day: 20)),
+        ], calendar: Self.calendar)
+
+        #expect(sections.map(\.day) == [date(day: 25), date(day: 24), date(day: 20)])
+        #expect(sections.map { $0.records.map(\.name) } == [["A", "B"], ["C"], ["D"]])
     }
 }
