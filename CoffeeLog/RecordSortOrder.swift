@@ -9,13 +9,14 @@ enum RecordSortOrder: String {
 
     var sortDescriptors: [SortDescriptor<CoffeeRecord>] {
         switch self {
-        case .rating:
-            [SortDescriptor(\.rating, order: .reverse),
-             SortDescriptor(\.date, order: .reverse),
-             SortDescriptor(\.createdAt, order: .reverse)]
-        case .newest:
-            [SortDescriptor(\.date, order: .reverse),
-             SortDescriptor(\.createdAt, order: .reverse)]
+        case .rating: [SortDescriptor(\.rating, order: .reverse)] + Self.newestFirst
+        case .newest: Self.newestFirst
         }
     }
+
+    /// 日付が新しい順。同じ日なら後から作った記録を上にする
+    private static let newestFirst: [SortDescriptor<CoffeeRecord>] = [
+        SortDescriptor(\.date, order: .reverse),
+        SortDescriptor(\.createdAt, order: .reverse),
+    ]
 }
