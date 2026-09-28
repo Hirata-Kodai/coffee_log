@@ -42,9 +42,9 @@ struct RecordDraft {
         return record
     }
 
-    /// 編集した内容を既存の記録に反映する。作成日時は変えない。反映したら true
+    /// 編集した内容を既存の記録に反映する。作成日時は変えない。保存できない下書きなら何もせず false
     func apply(to record: CoffeeRecord, calendar: Calendar = .current) -> Bool {
-        guard let name = name.nilIfBlank, let rating else { return false }
+        guard canSave, let name = name.nilIfBlank, let rating else { return false }
         record.name = name
         record.rating = rating
         record.date = calendar.startOfDay(for: date)

@@ -6,7 +6,7 @@ import Testing
 // - [x] 記録から下書きを作ると全項目が入る（未入力の文字列は空欄、価格は文字列）
 // - [x] 下書きを既存の記録に反映すると全項目が入れ替わる（空欄は nil、名称の空白除去、日付は 0 時）
 // - [x] 反映しても作成日時は変わらない
-// - [ ] 保存できない下書きは反映せず、記録は元のまま
+// - [x] 保存できない下書きは反映せず、記録は元のまま
 @MainActor
 struct EditRecordTests {
     private static let calendar: Calendar = {
@@ -104,5 +104,22 @@ struct EditRecordTests {
         _ = draft.apply(to: record, calendar: Self.calendar)
 
         #expect(record.createdAt == createdAt)
+    }
+
+    @Test(arguments: [
+        RecordDraft(name: " ", rating: 5),
+        RecordDraft(name: "エチオピア", rating: nil),
+        RecordDraft(name: "エチオピア", rating: 6),
+        RecordDraft(name: "エチオピア", rating: 5, priceText: "-100"),
+    ])
+    func 保存できない下書きは反映せず記録は元のまま(draft: RecordDraft) {
+        let record = filledRecord()
+
+        let applied = draft.apply(to: record, calendar: Self.calendar)
+
+        #expect(applied == false)
+        #expect(record.name == "ケニア AB")
+        #expect(record.rating == 4)
+        #expect(record.price == 1200)
     }
 }
