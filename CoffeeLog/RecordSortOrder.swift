@@ -6,6 +6,7 @@ enum RecordSortOrder: String {
     case rating
 
     var sortDescriptors: [SortDescriptor<CoffeeRecord>] {
-        [SortDescriptor(\.rating, order: .reverse)]
+        [SortDescriptor(\.rating, order: .reverse),
+         SortDescriptor(\.date, order: .reverse)]
     }
 }

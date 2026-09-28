@@ -5,7 +5,7 @@ import Testing
 
 // TODO（一覧の並び順）
 // - [x] 評価の高い順は評価の降順
-// - [ ] 評価の高い順で評価が同じなら日付の新しい順
+// - [x] 評価の高い順で評価が同じなら日付の新しい順
 // - [ ] 評価の高い順で評価も日付も同じなら作成日時の新しい順
 // - [ ] 新しい順は日付の降順
 // - [ ] 新しい順で日付が同じなら作成日時の新しい順
@@ -35,5 +35,14 @@ struct RecordSortOrderTests {
         ], order: .rating)
 
         #expect(names == ["5", "3", "1"])
+    }
+
+    @Test func 評価の高い順で評価が同じなら日付の新しい順() throws {
+        let names = try fetchNames([
+            record("古い", rating: 4, date: Self.day1),
+            record("新しい", rating: 4, date: Self.day2),
+        ], order: .rating)
+
+        #expect(names == ["新しい", "古い"])
     }
 }
