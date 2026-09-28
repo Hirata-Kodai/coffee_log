@@ -6,6 +6,7 @@ struct DaySection {
     let records: [CoffeeRecord]
 
     static func group(_ records: [CoffeeRecord], calendar: Calendar) -> [DaySection] {
-        []
+        guard let first = records.first else { return [] }
+        return [DaySection(day: first.date, records: records)]
     }
 }
