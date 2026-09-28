@@ -14,7 +14,8 @@ enum RecordSortOrder: String {
              SortDescriptor(\.date, order: .reverse),
              SortDescriptor(\.createdAt, order: .reverse)]
         case .newest:
-            [SortDescriptor(\.date, order: .reverse)]
+            [SortDescriptor(\.date, order: .reverse),
+             SortDescriptor(\.createdAt, order: .reverse)]
         }
     }
 }

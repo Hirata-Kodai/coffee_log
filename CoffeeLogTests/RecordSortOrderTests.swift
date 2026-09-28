@@ -8,7 +8,7 @@ import Testing
 // - [x] 評価の高い順で評価が同じなら日付の新しい順
 // - [x] 評価の高い順で評価も日付も同じなら作成日時の新しい順
 // - [x] 新しい順は日付の降順で、評価は見ない
-// - [ ] 新しい順で日付が同じなら作成日時の新しい順
+// - [x] 新しい順で日付が同じなら作成日時の新しい順
 @MainActor
 struct RecordSortOrderTests {
     private static let day1 = Date(timeIntervalSince1970: 1_789_000_000)
@@ -62,5 +62,14 @@ struct RecordSortOrderTests {
         ], order: .newest)
 
         #expect(names == ["新しい", "古い"])
+    }
+
+    @Test func 新しい順で日付が同じなら作成日時の新しい順() throws {
+        let names = try fetchNames([
+            record("先に作成", rating: 3, createdAt: Self.day1),
+            record("後に作成", rating: 3, createdAt: Self.day1.addingTimeInterval(60)),
+        ], order: .newest)
+
+        #expect(names == ["後に作成", "先に作成"])
     }
 }
