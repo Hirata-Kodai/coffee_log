@@ -38,6 +38,16 @@ struct RecordDraft {
     func makeRecord(now: Date, calendar: Calendar = .current) -> CoffeeRecord? {
         guard canSave, let name = name.nilIfBlank, let rating else { return nil }
         let record = CoffeeRecord(name: name, rating: rating, date: calendar.startOfDay(for: date), createdAt: now)
+        _ = apply(to: record, calendar: calendar)
+        return record
+    }
+
+    /// 編集した内容を既存の記録に反映する。作成日時は変えない。反映したら true
+    func apply(to record: CoffeeRecord, calendar: Calendar = .current) -> Bool {
+        guard let name = name.nilIfBlank, let rating else { return false }
+        record.name = name
+        record.rating = rating
+        record.date = calendar.startOfDay(for: date)
         record.shop = shop.nilIfBlank
         record.volume = volume.nilIfBlank
         record.origin = origin.nilIfBlank
@@ -53,7 +63,7 @@ struct RecordDraft {
         record.body = body
         record.aftertaste = aftertaste
         record.bitterness = bitterness
-        return record
+        return true
     }
 
     /// 空欄なら nil
