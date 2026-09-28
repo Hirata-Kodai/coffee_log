@@ -4,10 +4,17 @@ import Foundation
 enum RecordSortOrder: String {
     /// 評価の高い順（比べる）
     case rating
+    /// 新しい順（振り返る）
+    case newest
 
     var sortDescriptors: [SortDescriptor<CoffeeRecord>] {
-        [SortDescriptor(\.rating, order: .reverse),
-         SortDescriptor(\.date, order: .reverse),
-         SortDescriptor(\.createdAt, order: .reverse)]
+        switch self {
+        case .rating:
+            [SortDescriptor(\.rating, order: .reverse),
+             SortDescriptor(\.date, order: .reverse),
+             SortDescriptor(\.createdAt, order: .reverse)]
+        case .newest:
+            [SortDescriptor(\.date, order: .reverse)]
+        }
     }
 }
