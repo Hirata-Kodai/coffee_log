@@ -3,6 +3,7 @@ import Foundation
 /// 入力画面で編集中の記録。保存できるかどうかを判定し、CoffeeRecord の新規作成と編集の反映を行う。
 struct RecordDraft: Equatable {
     static let ratingRange = 1...5
+    static let volumeUnit = "g"
 
     var name: String = ""
     /// 未選択は nil
@@ -11,6 +12,7 @@ struct RecordDraft: Equatable {
 
     // 任意の文字列項目。空欄は "" で持ち、保存時に nil にそろえる
     var shop: String = ""
+    /// 容量（g）の入力欄の数字。保存時に単位の g を付ける
     var volume: String = ""
     var origin: String = ""
     var variety: String = ""
@@ -50,7 +52,7 @@ struct RecordDraft: Equatable {
         record.rating = rating
         record.date = calendar.startOfDay(for: date)
         record.shop = shop.nilIfBlank
-        record.volume = volume.nilIfBlank
+        record.volume = volume.nilIfBlank.map { $0 + Self.volumeUnit }
         record.origin = origin.nilIfBlank
         record.variety = variety.nilIfBlank
         record.memo = memo.nilIfBlank
