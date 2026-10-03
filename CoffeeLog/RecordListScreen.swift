@@ -24,9 +24,16 @@ struct RecordListScreen: View {
                         }
                     }
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button("記録を追加", systemImage: "plus") { addsRecord = true }
-                            .buttonStyle(.glassProminent)
-                            .tint(.coffeeAccent)
+                        Button {
+                            addsRecord = true
+                        } label: {
+                            // ボタンの文字色指定は glassProminent では効かないので、記号に直接色を付ける
+                            Image(systemName: "plus")
+                                .foregroundStyle(Color.coffeeOnAccent)
+                        }
+                        .accessibilityLabel("記録を追加")
+                        .buttonStyle(.glassProminent)
+                        .tint(.coffeeAccent)
                     }
                 }
                 .sheet(isPresented: $addsRecord) {

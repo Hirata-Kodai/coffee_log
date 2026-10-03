@@ -112,9 +112,15 @@ struct RecordEditorSheet: View {
                     Button("キーボードを閉じる", systemImage: "checkmark") { focusedField = nil }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("保存", systemImage: "checkmark", role: .confirm, action: save)
-                        .disabled(!draft.canSave)
-                        .tint(.coffeeAccent)
+                    Button(role: .confirm, action: save) {
+                        // 明るいプラムの上でも見えるよう、記号に直接色を付ける（保存できない間はシステムの薄い色）
+                        Image(systemName: "checkmark")
+                            .foregroundStyle(draft.canSave ? Color.coffeeOnAccent : Color.secondary)
+                    }
+                    .accessibilityLabel("保存")
+                    .disabled(!draft.canSave)
+                    .buttonStyle(.glassProminent)
+                    .tint(.coffeeAccent)
                 }
             }
         }
@@ -195,7 +201,7 @@ private struct RoastPicker: View {
                         Text(value.label)
                             .font(.subheadline.weight(selected ? .bold : .regular))
                             .frame(maxWidth: .infinity, minHeight: 36)
-                            .background(selected ? Color.white : Color.clear, in: .rect(cornerRadius: 8))
+                            .background(selected ? Color.coffeeSelectedFill : Color.clear, in: .rect(cornerRadius: 8))
                             .shadow(color: selected ? .black.opacity(0.15) : .clear, radius: 2, y: 1)
                     }
                     .buttonStyle(.plain)
