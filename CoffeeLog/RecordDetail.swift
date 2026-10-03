@@ -24,6 +24,12 @@ enum RecordDetail {
         } else if let volume = record.volume {
             rows.append(Row(label: "容量", value: volume))
         }
+        if let origin = record.origin {
+            rows.append(Row(label: "生産国", value: origin))
+        }
+        if let variety = record.variety {
+            rows.append(Row(label: "品種", value: variety))
+        }
         return rows
     }
 

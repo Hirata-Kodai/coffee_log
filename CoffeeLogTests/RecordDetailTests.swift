@@ -8,8 +8,8 @@ import Testing
 // - [x] 価格は ¥ と 3 桁区切りで出す
 // - [x] 価格と容量があれば 1 行にまとめる
 // - [x] 容量だけなら容量の行にする
-// - [ ] 生産国・品種を出す
-// - [ ] 並びは 購入形態 → 焙煎度 → 価格 → 生産国 → 品種
+// - [x] 生産国・品種を出す
+// - [x] 並びは 購入形態 → 焙煎度 → 価格 → 生産国 → 品種
 @MainActor
 struct RecordDetailTests {
     private func record() -> CoffeeRecord {
@@ -51,5 +51,27 @@ struct RecordDetailTests {
         record.volume = "R"
 
         #expect(RecordDetail.infoRows(for: record) == [.init(label: "容量", value: "R")])
+    }
+
+    @Test func 生産国と品種を出す() {
+        let record = record()
+        record.origin = "ケニア"
+        record.variety = "SL28"
+
+        #expect(RecordDetail.infoRows(for: record) == [
+            .init(label: "生産国", value: "ケニア"),
+            .init(label: "品種", value: "SL28"),
+        ])
+    }
+
+    @Test func 並びは購入形態と焙煎度と価格と生産国と品種の順() {
+        let record = record()
+        record.variety = "SL28"
+        record.origin = "ケニア"
+        record.price = 1800
+        record.roast = .light
+        record.purchaseType = .cafe
+
+        #expect(RecordDetail.infoRows(for: record).map(\.label) == ["購入形態", "焙煎度", "価格", "生産国", "品種"])
     }
 }
