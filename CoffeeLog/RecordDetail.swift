@@ -17,6 +17,14 @@ enum RecordDetail {
         if let roast = record.roast {
             rows.append(Row(label: "焙煎度", value: roast.label))
         }
+        if let price = record.price {
+            rows.append(Row(label: "価格", value: yen(price)))
+        }
         return rows
+    }
+
+    /// ¥1,800。端末の地域設定によらず 3 桁区切りにする
+    private static func yen(_ price: Int) -> String {
+        "¥" + price.formatted(.number.locale(Locale(identifier: "ja_JP")))
     }
 }
