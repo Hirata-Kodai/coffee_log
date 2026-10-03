@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <g transform="rotate(-8 470 480)">
+    <!-- 日記帳のページ -->
+    <rect x="230" y="180" width="480" height="600" rx="36" fill="#F7F4EF"/>
+    <!-- 日付欄 -->
+    <rect x="290" y="250" width="170" height="22" rx="11" fill="#B9AFA6"/>
+    <!-- 罫線 -->
+    <g fill="#D6CFC7">
+      <rect x="290" y="330" width="360" height="12" rx="6"/>
+      <rect x="290" y="400" width="360" height="12" rx="6"/>
+      <rect x="290" y="470" width="360" height="12" rx="6"/>
+      <rect x="290" y="540" width="360" height="12" rx="6"/>
+      <rect x="290" y="610" width="240" height="12" rx="6"/>
+    </g>
+  </g>
+</svg>
