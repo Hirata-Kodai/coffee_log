@@ -6,6 +6,7 @@ import Testing
 // TODO（CoffeeRecord のモデル定義）
 // - [x] スキーマ v1 で全項目を保存して読み出せる
 // - [x] 購入形態・焙煎度は enum で読み書きでき、保存は文字列になる
+// - [x] 保存された文字列が未知の値なら、購入形態・焙煎度は nil になる
 @MainActor
 struct CoffeeRecordTests {
     @Test func スキーマv1で全項目を保存して読み出せる() throws {
@@ -63,5 +64,15 @@ struct CoffeeRecordTests {
 
         record.purchaseType = nil
         #expect(record.purchaseTypeRaw == nil)
+    }
+
+    @Test func 保存された文字列が未知の値なら購入形態と焙煎度はnilになる() {
+        // 将来の版で選択肢を増やした・名前を変えたデータを古い版で読んだ場合など
+        let record = CoffeeRecord(name: "タンザニア", rating: 3, date: .now, createdAt: .now)
+        record.purchaseTypeRaw = "dripBag"
+        record.roastRaw = "cinnamon"
+
+        #expect(record.purchaseType == nil)
+        #expect(record.roast == nil)
     }
 }
