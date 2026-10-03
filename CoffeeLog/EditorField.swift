@@ -18,6 +18,12 @@ enum EditorField: CaseIterable {
         return fields[index + 1]
     }
 
+    func previous(showsDetails: Bool) -> EditorField? {
+        let fields = Self.visible(showsDetails: showsDetails)
+        guard let index = fields.firstIndex(of: self), index > 0 else { return nil }
+        return fields[index - 1]
+    }
+
     /// 閉じている詳細の欄は飛ばす
     private static func visible(showsDetails: Bool) -> [EditorField] {
         allCases.filter { showsDetails || !$0.isInDetails }
