@@ -4,7 +4,7 @@ import Testing
 
 // TODO（日付の表示形式）
 // - [x] 一覧の行は「月.日」（09.25）
-// - [ ] 日付見出しは「年.月.日 曜日」で曜日は英語の大文字 3 文字（2026.09.25 FRI）
+// - [x] 日付見出しは「年.月.日 曜日」で曜日は英語の大文字 3 文字（2026.09.25 FRI）
 struct CoffeeDateFormatTests {
     private static let calendar: Calendar = {
         var calendar = Calendar(identifier: .gregorian)
@@ -16,5 +16,9 @@ struct CoffeeDateFormatTests {
 
     @Test func 一覧の行は月と日() {
         #expect(CoffeeDateFormat.short(date, calendar: Self.calendar) == "09.25")
+    }
+
+    @Test func 日付見出しは年月日と英語大文字の曜日() {
+        #expect(CoffeeDateFormat.long(date, calendar: Self.calendar) == "2026.09.25 FRI")
     }
 }
