@@ -8,7 +8,7 @@ import Testing
 // - [x] 店の名前では絞り込まない
 // - [x] 大文字小文字を区別しない
 // - [x] 検索欄の前後の空白は無視する
-// - [ ] 検索欄が空欄なら絞り込まない
+// - [x] 検索欄が空欄なら絞り込まない
 @MainActor
 struct RecordSearchTests {
     /// 名称と店の組を入れて検索し、当たった名称を返す。並び順は検索の関心ではないので Set にする
@@ -61,5 +61,15 @@ struct RecordSearchTests {
         ])
 
         #expect(names == ["ケニア AB"])
+    }
+
+    @Test(arguments: ["", " "])
+    func 検索欄が空欄なら絞り込まない(text: String) throws {
+        let names = try search(text, in: [
+            ("ケニア AB", nil),
+            ("タンザニア", nil),
+        ])
+
+        #expect(names == ["ケニア AB", "タンザニア"])
     }
 }
