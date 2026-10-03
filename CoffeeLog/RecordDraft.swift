@@ -18,7 +18,8 @@ struct RecordDraft: Equatable {
     /// 価格（円）の入力欄の文字列。空欄は未入力
     var priceText: String = ""
 
-    var purchaseType: PurchaseType? = nil
+    /// 新しい記録では豆を選んだ状態で始める
+    var purchaseType: PurchaseType? = .bean
     var roast: Roast? = nil
     var photo: Data? = nil
 
