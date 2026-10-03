@@ -136,10 +136,10 @@
 				};
 			};
 			buildConfigurationList = 000000000000000010000000 /* Build configuration list for PBXProject "CoffeeLog" */;
-			developmentRegion = en;
+			developmentRegion = ja;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				en,
+				ja,
 				Base,
 			);
 			mainGroup = 000000000000000000000001;
