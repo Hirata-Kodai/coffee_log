@@ -6,7 +6,7 @@ import UIKit
 // - [x] 長辺が 2048px を超える横長の写真は長辺 2048px に縮小し、縦横比を保つ
 // - [x] 縦長の写真も長辺 2048px に縮小する
 // - [x] 長辺が 2048px 以下なら拡大しない
-// - [ ] JPEG で保存する
+// - [x] JPEG で保存する
 struct PhotoResizerTests {
     /// 指定したピクセル数の単色画像
     private func image(width: Int, height: Int) -> UIImage {
@@ -41,5 +41,12 @@ struct PhotoResizerTests {
         let data = try #require(PhotoResizer.jpegData(from: image(width: 1000, height: 500)))
 
         #expect(try pixelSize(of: data) == CGSize(width: 1000, height: 500))
+    }
+
+    @Test func JPEGで保存する() throws {
+        let data = try #require(PhotoResizer.jpegData(from: image(width: 100, height: 100)))
+
+        // JPEG の先頭は FF D8 FF
+        #expect(Array(data.prefix(3)) == [0xFF, 0xD8, 0xFF])
     }
 }

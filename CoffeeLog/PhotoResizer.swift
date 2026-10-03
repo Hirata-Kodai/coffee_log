@@ -3,7 +3,9 @@ import UIKit
 /// 写真を保存用のデータにする
 enum PhotoResizer {
     static let maxLongSide: CGFloat = 2048
+    static let jpegQuality: CGFloat = 0.8
 
+    /// 長辺 2048px を超えるなら縮小し（拡大はしない）、JPEG にする
     static func jpegData(from image: UIImage) -> Data? {
         let ratio = min(1, maxLongSide / max(image.size.width, image.size.height))
         let size = CGSize(width: image.size.width * ratio, height: image.size.height * ratio)
@@ -12,6 +14,6 @@ enum PhotoResizer {
         let resized = UIGraphicsImageRenderer(size: size, format: format).image { _ in
             image.draw(in: CGRect(origin: .zero, size: size))
         }
-        return resized.pngData()
+        return resized.jpegData(compressionQuality: jpegQuality)
     }
 }
