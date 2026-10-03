@@ -67,12 +67,22 @@ struct RecordEditorSheet: View {
                 }
                 .listRowBackground(Color.coffeeCard)
                 Section {
-                    DisclosureGroup("詳細（味・産地・メモ）", isExpanded: $showsDetails) {
+                    DisclosureGroup("詳細（味・産地・精製・メモ）", isExpanded: $showsDetails) {
                         TasteFields(draft: $draft)
                         LabeledTextField(label: "生産国", text: $draft.origin, prompt: "例：エチオピア")
                             .focused($focusedField, equals: .origin)
+                        LabeledTextField(label: "地域", text: $draft.region, prompt: "例：イルガチェフェ")
+                            .focused($focusedField, equals: .region)
+                        LabeledTextField(label: "農園", text: $draft.farm, prompt: "例：ゲデブ農園")
+                            .focused($focusedField, equals: .farm)
                         LabeledTextField(label: "品種", text: $draft.variety, prompt: "例：ゲイシャ")
                             .focused($focusedField, equals: .variety)
+                        ProcessField(process: $draft.process, focusedField: $focusedField)
+                        LabeledTextField(label: "標高", text: $draft.altitude, prompt: "例：1,900–2,100m")
+                            .focused($focusedField, equals: .altitude)
+                        TextField("テイスティングノート", text: $draft.tastingNotes, prompt: Text("店の説明にある風味（例：ベリー、ジャスミン）"), axis: .vertical)
+                            .lineLimit(2...)
+                            .focused($focusedField, equals: .tastingNotes)
                         TextField("メモ", text: $draft.memo, prompt: Text("香りや淹れ方の気づきなど"), axis: .vertical)
                             .lineLimit(3...)
                             .focused($focusedField, equals: .memo)
@@ -144,7 +154,7 @@ private extension RecordDraft {
     var hasDetails: Bool {
         let tastes = [aroma, acidity, sweetness, body, aftertaste, bitterness]
         return tastes.contains { $0 != nil }
-            || [origin, variety, memo].contains { $0.nilIfBlank != nil }
+            || [origin, region, farm, variety, process, altitude, tastingNotes, memo].contains { $0.nilIfBlank != nil }
     }
 }
 
@@ -157,6 +167,40 @@ private struct LabeledTextField: View {
         LabeledContent(label) {
             TextField(label, text: $text, prompt: Text(prompt))
         }
+    }
+}
+
+/// 精製方法。自由入力で、下に並べた候補を押すとそのまま入る
+private struct ProcessField: View {
+    static let suggestions = ["ナチュラル", "ウォッシュト", "ハニー", "アナエロビック"]
+
+    @Binding var process: String
+    var focusedField: FocusState<EditorField?>.Binding
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            LabeledTextField(label: "精製方法", text: $process, prompt: "例：ウォッシュト")
+                .focused(focusedField, equals: .process)
+            // 候補は折り返さず、収まらなければ横にスクロールする
+            ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 6) {
+                ForEach(Self.suggestions, id: \.self) { suggestion in
+                    let selected = process == suggestion
+                    Button(suggestion) { process = suggestion }
+                        .font(.footnote.weight(selected ? .bold : .regular))
+                        .lineLimit(1)
+                        .fixedSize()
+                        .padding(.horizontal, 10)
+                        .frame(minHeight: 32)
+                        .background(selected ? Color.coffeeSelectedFill : Color.coffeeSeparator.opacity(0.6),
+                                    in: .capsule)
+                        .buttonStyle(.plain)
+                        .accessibilityAddTraits(selected ? .isSelected : [])
+                }
+            }
+            }
+        }
+        .padding(.vertical, 4)
     }
 }
 

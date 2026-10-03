@@ -36,6 +36,11 @@ struct SampleRecords: PreviewModifier {
         ethiopia.volume = "200g"
         ethiopia.origin = "エチオピア"
         ethiopia.variety = "在来種"
+        ethiopia.region = "イルガチェフェ"
+        ethiopia.farm = "ゲデブ"
+        ethiopia.process = "ナチュラル"
+        ethiopia.altitude = "1,900–2,100m"
+        ethiopia.tastingNotes = "ブルーベリー、ジャスミン、ミルクチョコレート"
         ethiopia.aroma = 5
         ethiopia.acidity = 4
         ethiopia.sweetness = 4
