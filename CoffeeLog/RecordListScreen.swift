@@ -32,6 +32,9 @@ struct RecordListScreen: View {
                 .sheet(isPresented: $addsRecord) {
                     RecordEditorSheet()
                 }
+                .navigationDestination(for: CoffeeRecord.self) { record in
+                    RecordDetailScreen(record: record)
+                }
         }
     }
 }
@@ -114,7 +117,10 @@ private struct RecordCard: View {
     var body: some View {
         VStack(spacing: 1) {
             ForEach(records) { record in
-                RecordRow(record: record, showsDate: showsDate)
+                NavigationLink(value: record) {
+                    RecordRow(record: record, showsDate: showsDate)
+                }
+                .buttonStyle(.plain)
             }
         }
         .background(Color.coffeeSeparator)
