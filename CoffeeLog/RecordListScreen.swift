@@ -39,11 +39,14 @@ struct RecordListScreen: View {
     }
 }
 
-/// 並び順と検索条件で取り出した記録の一覧
+/// 並び順と検索条件で取り出した記録の一覧。行を左にスワイプすると削除できる
 struct RecordList: View {
     let sortOrder: RecordSortOrder
     let searchText: String
     @Query private var records: [CoffeeRecord]
+    @Environment(\.modelContext) private var modelContext
+    /// スワイプで削除を選び、確認待ちの記録
+    @State private var pendingDelete: CoffeeRecord?
 
     init(sortOrder: RecordSortOrder, searchText: String) {
         self.sortOrder = sortOrder
@@ -52,48 +55,81 @@ struct RecordList: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                Text("COFFEE LOG")
-                    .font(.coffeeCondensed(size: 44, weight: .bold))
-                    .foregroundStyle(Color.coffeeAccent)
-                    .padding(.horizontal, 20)
-                Text("\(sortOrder.label) · \(records.count)杯")
-                    .font(.subheadline)
-                    .foregroundStyle(Color.coffeeSecondaryText)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 4)
-                    .padding(.bottom, 14)
+        List {
+            Section {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("COFFEE LOG")
+                        .font(.coffeeCondensed(size: 44, weight: .bold))
+                        .foregroundStyle(Color.coffeeAccent)
+                    Text("\(sortOrder.label) · \(records.count)杯")
+                        .font(.subheadline)
+                        .foregroundStyle(Color.coffeeSecondaryText)
+                }
+                .listRowInsets(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 4))
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
 
                 if records.isEmpty {
                     emptyView
-                } else {
-                    switch sortOrder {
-                    case .rating:
-                        RecordCard(records: records, showsDate: true)
-                            .padding(.horizontal, 16)
-                    case .newest:
-                        VStack(alignment: .leading, spacing: 18) {
-                            ForEach(DaySection.group(records, calendar: .current)) { section in
-                                VStack(alignment: .leading, spacing: 6) {
-                                    Text(CoffeeDateFormat.long(section.day))
-                                        .font(.coffeeCondensed(size: 15, weight: .medium))
-                                        .tracking(1.8)
-                                        .foregroundStyle(Color.coffeeSecondaryText)
-                                        .padding(.horizontal, 4)
-                                        .accessibilityAddTraits(.isHeader)
-                                    RecordCard(records: section.records, showsDate: false)
-                                }
-                            }
-                        }
-                        .padding(.horizontal, 16)
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                }
+            }
+
+            switch sortOrder {
+            case .rating:
+                Section {
+                    rows(records, showsDate: true)
+                }
+            case .newest:
+                ForEach(DaySection.group(records, calendar: .current)) { section in
+                    Section {
+                        rows(section.records, showsDate: false)
+                    } header: {
+                        Text(CoffeeDateFormat.long(section.day))
+                            .font(.coffeeCondensed(size: 15, weight: .medium))
+                            .tracking(1.8)
+                            .foregroundStyle(Color.coffeeSecondaryText)
                     }
                 }
             }
-            .padding(.bottom, 24)
         }
+        .listStyle(.insetGrouped)
+        .listSectionSpacing(18)
+        .scrollContentBackground(.hidden)
         .background(Color.coffeeBackground)
         .foregroundStyle(Color.coffeeText)
+        .confirmationDialog(
+            "この記録を削除しますか？",
+            isPresented: Binding(get: { pendingDelete != nil }, set: { if !$0 { pendingDelete = nil } }),
+            titleVisibility: .visible,
+            presenting: pendingDelete
+        ) { record in
+            Button("削除", role: .destructive) {
+                modelContext.delete(record)
+                pendingDelete = nil
+            }
+        } message: { record in
+            Text("「\(record.name)」を削除すると元に戻せません。")
+        }
+    }
+
+    private func rows(_ records: [CoffeeRecord], showsDate: Bool) -> some View {
+        ForEach(records) { record in
+            // NavigationLink をそのまま行にすると右に「>」が付くので、透明にして重ねる
+            RecordRow(record: record, showsDate: showsDate)
+                .background {
+                    NavigationLink(value: record) { EmptyView() }.opacity(0)
+                }
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.coffeeCard)
+                .listRowSeparatorTint(Color.coffeeSeparator)
+                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                    // role: .destructive にすると確認前に行が消えるアニメーションになるので、色だけ赤にする
+                    Button("削除", systemImage: "trash") { pendingDelete = record }
+                        .tint(.red)
+                }
+        }
     }
 
     @ViewBuilder private var emptyView: some View {
@@ -106,25 +142,6 @@ struct RecordList: View {
                 description: Text("右上の + から飲んだコーヒーを記録できます")
             )
         }
-    }
-}
-
-/// 角丸のカードに行を区切り線つきで並べる
-private struct RecordCard: View {
-    let records: [CoffeeRecord]
-    let showsDate: Bool
-
-    var body: some View {
-        VStack(spacing: 1) {
-            ForEach(records) { record in
-                NavigationLink(value: record) {
-                    RecordRow(record: record, showsDate: showsDate)
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .background(Color.coffeeSeparator)
-        .clipShape(.rect(cornerRadius: 12))
     }
 }
 
