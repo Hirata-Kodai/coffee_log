@@ -13,6 +13,7 @@ struct RecordEditorSheet: View {
     @State private var original: RecordDraft
     @State private var showsDetails: Bool
     @State private var confirmsDiscard = false
+    @FocusState private var focusedField: EditorField?
 
     init(record: CoffeeRecord? = nil) {
         self.record = record
@@ -30,12 +31,14 @@ struct RecordEditorSheet: View {
             Form {
                 Section("必須") {
                     LabeledTextField(label: "名称", text: $draft.name, prompt: "例：ケニア AB")
+                        .focused($focusedField, equals: .name)
                     RatingPicker(rating: $draft.rating)
                     DatePicker("日付", selection: $draft.date, displayedComponents: .date)
                 }
                 .listRowBackground(Color.coffeeCard)
                 Section("基本") {
                     LabeledTextField(label: "店", text: $draft.shop, prompt: "例：村上コーヒー")
+                        .focused($focusedField, equals: .shop)
                     Picker("購入形態", selection: $draft.purchaseType) {
                         Text("未選択").tag(PurchaseType?.none)
                         ForEach(PurchaseType.allCases, id: \.self) { type in
@@ -49,12 +52,14 @@ struct RecordEditorSheet: View {
                             Text("¥").foregroundStyle(Color.coffeeSecondaryText)
                             TextField("価格", text: $draft.priceText, prompt: Text("例：520"))
                                 .keyboardType(.numberPad)
+                                .focused($focusedField, equals: .price)
                         }
                     }
                     LabeledContent("容量") {
                         HStack(spacing: 4) {
                             TextField("容量", text: $draft.volume, prompt: Text("例：200"))
                                 .keyboardType(.numberPad)
+                                .focused($focusedField, equals: .volume)
                             Text(RecordDraft.volumeUnit).foregroundStyle(Color.coffeeSecondaryText)
                         }
                     }
@@ -65,17 +70,20 @@ struct RecordEditorSheet: View {
                     DisclosureGroup("詳細（味・産地・メモ）", isExpanded: $showsDetails) {
                         TasteFields(draft: $draft)
                         LabeledTextField(label: "生産国", text: $draft.origin, prompt: "例：エチオピア")
+                            .focused($focusedField, equals: .origin)
                         LabeledTextField(label: "品種", text: $draft.variety, prompt: "例：ゲイシャ")
+                            .focused($focusedField, equals: .variety)
                         TextField("メモ", text: $draft.memo, prompt: Text("香りや淹れ方の気づきなど"), axis: .vertical)
                             .lineLimit(3...)
+                            .focused($focusedField, equals: .memo)
                     }
                     .tint(.coffeeText)
                 }
                 .listRowBackground(Color.coffeeCard)
             }
-            // 入力欄以外をタップしたら、またはスクロールしたらキーボードを閉じる
+            // 入力欄以外をタップしたらキーボードを閉じる。スクロールでは閉じない
             .background(KeyboardDismissOnTap())
-            .scrollDismissesKeyboard(.immediately)
+            .scrollDismissesKeyboard(.never)
             .scrollContentBackground(.hidden)
             .background(Color.coffeeBackground)
             .foregroundStyle(Color.coffeeText)
@@ -90,10 +98,18 @@ struct RecordEditorSheet: View {
                         Button("変更を破棄", role: .destructive) { dismiss() }
                     }
                 }
-                // 数字キーボードには閉じるキーがないので、キーボードの上に完了を置く
+                // iOS 標準のフォームと同じく、キーボードの上に前後の欄への移動と閉じるボタンを置く
                 ToolbarItemGroup(placement: .keyboard) {
+                    Button("前の項目", systemImage: "chevron.up") {
+                        focusedField = focusedField?.previous(showsDetails: showsDetails)
+                    }
+                    .disabled(focusedField?.previous(showsDetails: showsDetails) == nil)
+                    Button("次の項目", systemImage: "chevron.down") {
+                        focusedField = focusedField?.next(showsDetails: showsDetails)
+                    }
+                    .disabled(focusedField?.next(showsDetails: showsDetails) == nil)
                     Spacer()
-                    Button("完了") { dismissKeyboard() }
+                    Button("キーボードを閉じる", systemImage: "checkmark") { focusedField = nil }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("保存", systemImage: "checkmark", role: .confirm, action: save)
@@ -104,10 +120,6 @@ struct RecordEditorSheet: View {
         }
         // 入力途中に下スワイプで消えないようにする
         .interactiveDismissDisabled(hasChanges)
-    }
-
-    private func dismissKeyboard() {
-        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 
     private func save() {
