@@ -18,7 +18,9 @@ enum RecordDetail {
             rows.append(Row(label: "焙煎度", value: roast.label))
         }
         if let price = record.price {
-            rows.append(Row(label: "価格", value: yen(price)))
+            // 容量があれば「¥1,800 / 200g」のように価格の行にまとめる
+            let value = [yen(price), record.volume].compactMap { $0 }.joined(separator: " / ")
+            rows.append(Row(label: "価格", value: value))
         }
         return rows
     }

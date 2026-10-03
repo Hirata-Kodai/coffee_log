@@ -6,7 +6,7 @@ import Testing
 // - [x] 未入力の項目は出さない
 // - [x] 購入形態・焙煎度は日本語の名前で出す
 // - [x] 価格は ¥ と 3 桁区切りで出す
-// - [ ] 価格と容量があれば 1 行にまとめる
+// - [x] 価格と容量があれば 1 行にまとめる
 // - [ ] 容量だけなら容量の行にする
 // - [ ] 生産国・品種を出す
 // - [ ] 並びは 購入形態 → 焙煎度 → 価格 → 生産国 → 品種
@@ -36,5 +36,13 @@ struct RecordDetailTests {
         record.price = 1800
 
         #expect(RecordDetail.infoRows(for: record) == [.init(label: "価格", value: "¥1,800")])
+    }
+
+    @Test func 価格と容量があれば1行にまとめる() {
+        let record = record()
+        record.price = 1800
+        record.volume = "200g"
+
+        #expect(RecordDetail.infoRows(for: record) == [.init(label: "価格", value: "¥1,800 / 200g")])
     }
 }
