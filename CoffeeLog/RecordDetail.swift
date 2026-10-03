@@ -44,7 +44,16 @@ enum RecordDetail {
 
     /// 全部未入力なら nil（チャートを出さない）
     static func taste(for record: CoffeeRecord) -> Taste? {
-        nil
+        let values: [(name: String, value: Int?)] = [
+            ("香り", record.aroma),
+            ("酸味", record.acidity),
+            ("甘さ", record.sweetness),
+            ("コク", record.body),
+            ("後味", record.aftertaste),
+            ("苦味", record.bitterness),
+        ]
+        guard values.contains(where: { $0.value != nil }) else { return nil }
+        return Taste(values: values)
     }
 
     /// ¥1,800。端末の地域設定によらず 3 桁区切りにする

@@ -13,7 +13,7 @@ import Testing
 //
 // TODO（詳細画面の味）
 // - [x] 味が全部未入力ならチャートを出さない
-// - [ ] 香り → 酸味 → 甘さ → コク → 後味 → 苦味 の順で値を返し、未入力は nil
+// - [x] 香り → 酸味 → 甘さ → コク → 後味 → 苦味 の順で値を返し、未入力は nil
 // - [ ] 要約は「香り 5 · 酸味 4 …（5段階）」で、未入力は「-」
 @MainActor
 struct RecordDetailTests {
@@ -82,5 +82,17 @@ struct RecordDetailTests {
 
     @Test func 味が全部未入力ならチャートを出さない() {
         #expect(RecordDetail.taste(for: record()) == nil)
+    }
+
+    @Test func 味は香りから苦味の順で値を返し未入力はnil() throws {
+        let record = record()
+        record.aroma = 5
+        record.sweetness = 4
+        record.bitterness = 1
+
+        let taste = try #require(RecordDetail.taste(for: record))
+
+        #expect(taste.values.map(\.name) == ["香り", "酸味", "甘さ", "コク", "後味", "苦味"])
+        #expect(taste.values.map(\.value) == [5, nil, 4, nil, nil, 1])
     }
 }
