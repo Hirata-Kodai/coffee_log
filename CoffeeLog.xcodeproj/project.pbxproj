@@ -334,6 +334,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				MARKETING_VERSION = 1.0;
+				ASSETCATALOG_COMPILER_APPICON_NAME = coffee_log;
 				PRODUCT_BUNDLE_IDENTIFIER = com.hiratako.CoffeeLog;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -368,6 +369,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				MARKETING_VERSION = 1.0;
+				ASSETCATALOG_COMPILER_APPICON_NAME = coffee_log;
 				PRODUCT_BUNDLE_IDENTIFIER = com.hiratako.CoffeeLog;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
