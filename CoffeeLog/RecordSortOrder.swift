@@ -20,3 +20,23 @@ enum RecordSortOrder: String {
         SortDescriptor(\.createdAt, order: .reverse),
     ]
 }
+
+extension RecordSortOrder: CaseIterable, Identifiable {
+    var id: Self { self }
+
+    /// 一覧の見出しに出す名前
+    var label: String {
+        switch self {
+        case .rating: "評価の高い順"
+        case .newest: "新しい順"
+        }
+    }
+
+    /// 並べ替えメニューに出す名前
+    var menuLabel: String {
+        switch self {
+        case .rating: "評価の高い順"
+        case .newest: "新しい順（日付ごと）"
+        }
+    }
+}

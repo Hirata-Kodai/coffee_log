@@ -7,6 +7,13 @@ struct CoffeeLogApp: App {
 
     init() {
         do {
+            #if DEBUG
+            // 起動引数 -sampleData でサンプル入りのメモリ上のコンテナを使う（端末の保存データには触れない）
+            if CommandLine.arguments.contains("-sampleData") {
+                container = try SampleRecords.makeSharedContext()
+                return
+            }
+            #endif
             container = try .coffeeLog()
         } catch {
             // 保存先を開けないと何も記録できないので、起動を止めて原因を残す
@@ -16,7 +23,7 @@ struct CoffeeLogApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RecordListScreen()
         }
         .modelContainer(container)
     }

@@ -20,3 +20,7 @@ struct DaySection {
         return sections
     }
 }
+
+extension DaySection: Identifiable {
+    var id: Date { day }
+}
