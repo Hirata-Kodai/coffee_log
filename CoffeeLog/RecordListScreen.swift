@@ -56,7 +56,14 @@ struct RecordList: View {
 
     var body: some View {
         List {
+            // タイトルは行ではなく見出しに置く（行に置くと List の切り抜きで文字の左端が欠ける）
             Section {
+                if records.isEmpty {
+                    emptyView
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                }
+            } header: {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("COFFEE LOG")
                         .font(.coffeeCondensed(size: 44, weight: .bold))
@@ -65,15 +72,9 @@ struct RecordList: View {
                         .font(.subheadline)
                         .foregroundStyle(Color.coffeeSecondaryText)
                 }
-                .listRowInsets(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 4))
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
-
-                if records.isEmpty {
-                    emptyView
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
-                }
+                .textCase(nil)
+                .padding(.leading, -16)
+                .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
             }
 
             switch sortOrder {
