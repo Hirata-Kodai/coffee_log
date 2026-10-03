@@ -21,6 +21,8 @@ enum RecordDetail {
             // 容量があれば「¥1,800 / 200g」のように価格の行にまとめる
             let value = [yen(price), record.volume].compactMap { $0 }.joined(separator: " / ")
             rows.append(Row(label: "価格", value: value))
+        } else if let volume = record.volume {
+            rows.append(Row(label: "容量", value: volume))
         }
         return rows
     }
