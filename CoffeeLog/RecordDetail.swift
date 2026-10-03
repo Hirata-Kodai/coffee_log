@@ -37,6 +37,12 @@ enum RecordDetail {
     struct Taste: Equatable {
         let values: [(name: String, value: Int?)]
 
+        /// チャートの下に出す文。読み上げにも使う
+        var summary: String {
+            let parts = values.map { "\($0.name) \($0.value.map(String.init) ?? "-")" }
+            return parts.joined(separator: " · ") + "（5段階）"
+        }
+
         static func == (lhs: Taste, rhs: Taste) -> Bool {
             lhs.values.elementsEqual(rhs.values) { $0.name == $1.name && $0.value == $1.value }
         }
