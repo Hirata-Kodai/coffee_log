@@ -7,11 +7,12 @@ import UIKit
 // - [x] 縦長の写真も長辺 2048px に縮小する
 // - [x] 長辺が 2048px 以下なら拡大しない
 // - [x] JPEG で保存する
+// - [x] 画面の倍率を持つ画像もピクセル数で判断する
 struct PhotoResizerTests {
-    /// 指定したピクセル数の単色画像
-    private func image(width: Int, height: Int) -> UIImage {
+    /// 指定した大きさ（ポイント）と倍率の単色画像。ピクセル数は大きさ × 倍率
+    private func image(width: Int, height: Int, scale: CGFloat = 1) -> UIImage {
         let format = UIGraphicsImageRendererFormat()
-        format.scale = 1
+        format.scale = scale
         return UIGraphicsImageRenderer(size: CGSize(width: width, height: height), format: format).image { context in
             UIColor.brown.setFill()
             context.fill(CGRect(x: 0, y: 0, width: width, height: height))
@@ -48,5 +49,12 @@ struct PhotoResizerTests {
 
         // JPEG の先頭は FF D8 FF
         #expect(Array(data.prefix(3)) == [0xFF, 0xD8, 0xFF])
+    }
+
+    @Test func 画面の倍率を持つ画像もピクセル数で判断する() throws {
+        // 1500 × 1000 ポイントの 2 倍 = 3000 × 2000 ピクセル
+        let data = try #require(PhotoResizer.jpegData(from: image(width: 1500, height: 1000, scale: 2)))
+
+        #expect(try pixelSize(of: data) == CGSize(width: 2048, height: 1365))
     }
 }
