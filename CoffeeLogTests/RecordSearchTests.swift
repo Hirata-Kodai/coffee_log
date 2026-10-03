@@ -7,7 +7,7 @@ import Testing
 // - [x] 豆の名前の部分一致で絞り込む
 // - [x] 店の名前では絞り込まない
 // - [x] 大文字小文字を区別しない
-// - [ ] 検索欄の前後の空白は無視する
+// - [x] 検索欄の前後の空白は無視する
 // - [ ] 検索欄が空欄なら絞り込まない
 @MainActor
 struct RecordSearchTests {
@@ -52,5 +52,14 @@ struct RecordSearchTests {
         ])
 
         #expect(names == ["KENYA Peaberry", "Kenya AA"])
+    }
+
+    @Test func 検索欄の前後の空白は無視する() throws {
+        let names = try search(" ケニア\u{3000}", in: [
+            ("ケニア AB", nil),
+            ("タンザニア", nil),
+        ])
+
+        #expect(names == ["ケニア AB"])
     }
 }
