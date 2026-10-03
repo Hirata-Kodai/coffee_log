@@ -34,7 +34,8 @@ struct RecordDraft: Equatable {
     var bitterness: Int? = nil
 
     var canSave: Bool {
-        hasName && hasValidRating && hasValidPrice
+        hasName && hasValidRating && Self.isBlankOrNonNegativeInteger(priceText)
+            && Self.isBlankOrNonNegativeInteger(volume)
     }
 
     /// 保存できない下書きなら nil。now は作成日時になる。日付は calendar でその日の 0 時にそろえる
@@ -83,11 +84,11 @@ struct RecordDraft: Equatable {
         return Self.ratingRange.contains(rating)
     }
 
-    /// 空欄は有効。入力があれば 0 以上の整数として読めること
-    private var hasValidPrice: Bool {
-        guard priceText.nilIfBlank != nil else { return true }
-        guard let price else { return false }
-        return price >= 0
+    /// 数字の入力欄の判定。空欄は有効。入力があれば 0 以上の整数として読めること
+    private static func isBlankOrNonNegativeInteger(_ text: String) -> Bool {
+        guard let trimmed = text.nilIfBlank else { return true }
+        guard let value = Int(trimmed) else { return false }
+        return value >= 0
     }
 }
 

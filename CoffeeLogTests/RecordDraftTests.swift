@@ -9,7 +9,7 @@ import Testing
 // - [x] 名称と評価（1〜5）があれば保存できる
 // - [x] 価格が 0 以上の整数として読めなければ保存できない
 // - [x] 新しい下書きは購入形態が豆
-// - [ ] 容量が 0 以上の整数として読めなければ保存できない
+// - [x] 容量が 0 以上の整数として読めなければ保存できない
 struct RecordDraftTests {
     @Test(arguments: ["", "   ", "\u{3000}", "\n"])
     func 名称が空か空白だけなら保存できない(name: String) {
@@ -43,5 +43,12 @@ struct RecordDraftTests {
 
     @Test func 新しい下書きは購入形態が豆() {
         #expect(RecordDraft().purchaseType == .bean)
+    }
+
+    @Test(arguments: ["R", "-100", "12.5", "２００", "200g"])
+    func 容量が0以上の整数として読めなければ保存できない(volume: String) {
+        var draft = RecordDraft(name: "ケニア AB", rating: 3)
+        draft.volume = volume
+        #expect(draft.canSave == false)
     }
 }
