@@ -5,6 +5,7 @@ import SwiftUI
 struct RecordListScreen: View {
     @AppStorage("recordSortOrder") private var sortOrder: RecordSortOrder = .rating
     @State private var searchText = ""
+    @State private var addsRecord = false
 
     var body: some View {
         NavigationStack {
@@ -23,11 +24,13 @@ struct RecordListScreen: View {
                         }
                     }
                     ToolbarItem(placement: .topBarTrailing) {
-                        // TODO: 入力シートを作ったらつなぐ
-                        Button("記録を追加", systemImage: "plus") {}
+                        Button("記録を追加", systemImage: "plus") { addsRecord = true }
                             .buttonStyle(.glassProminent)
                             .tint(.coffeeAccent)
                     }
+                }
+                .sheet(isPresented: $addsRecord) {
+                    RecordEditorSheet()
                 }
         }
     }
