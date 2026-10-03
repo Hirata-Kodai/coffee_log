@@ -10,6 +10,11 @@ import Testing
 // - [x] 容量だけなら容量の行にする
 // - [x] 生産国・品種を出す
 // - [x] 並びは 購入形態 → 焙煎度 → 価格 → 生産国 → 品種
+//
+// TODO（詳細画面の味）
+// - [x] 味が全部未入力ならチャートを出さない
+// - [ ] 香り → 酸味 → 甘さ → コク → 後味 → 苦味 の順で値を返し、未入力は nil
+// - [ ] 要約は「香り 5 · 酸味 4 …（5段階）」で、未入力は「-」
 @MainActor
 struct RecordDetailTests {
     private func record() -> CoffeeRecord {
@@ -73,5 +78,9 @@ struct RecordDetailTests {
         record.purchaseType = .cafe
 
         #expect(RecordDetail.infoRows(for: record).map(\.label) == ["購入形態", "焙煎度", "価格", "生産国", "品種"])
+    }
+
+    @Test func 味が全部未入力ならチャートを出さない() {
+        #expect(RecordDetail.taste(for: record()) == nil)
     }
 }

@@ -33,6 +33,20 @@ enum RecordDetail {
         return rows
     }
 
+    /// 味 6 軸の値
+    struct Taste: Equatable {
+        let values: [(name: String, value: Int?)]
+
+        static func == (lhs: Taste, rhs: Taste) -> Bool {
+            lhs.values.elementsEqual(rhs.values) { $0.name == $1.name && $0.value == $1.value }
+        }
+    }
+
+    /// 全部未入力なら nil（チャートを出さない）
+    static func taste(for record: CoffeeRecord) -> Taste? {
+        nil
+    }
+
     /// ¥1,800。端末の地域設定によらず 3 桁区切りにする
     private static func yen(_ price: Int) -> String {
         "¥" + price.formatted(.number.locale(Locale(identifier: "ja_JP")))
