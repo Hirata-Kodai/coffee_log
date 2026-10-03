@@ -1,0 +1,33 @@
+import Testing
+import UIKit
+@testable import CoffeeLog
+
+// TODO（保存前の写真の縮小）
+// - [x] 長辺が 2048px を超える横長の写真は長辺 2048px に縮小し、縦横比を保つ
+// - [ ] 縦長の写真も長辺 2048px に縮小する
+// - [ ] 長辺が 2048px 以下なら拡大しない
+// - [ ] JPEG で保存する
+struct PhotoResizerTests {
+    /// 指定したピクセル数の単色画像
+    private func image(width: Int, height: Int) -> UIImage {
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        return UIGraphicsImageRenderer(size: CGSize(width: width, height: height), format: format).image { context in
+            UIColor.brown.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: width, height: height))
+        }
+    }
+
+    /// 保存用データを読み直したときのピクセル数
+    private func pixelSize(of data: Data) throws -> CGSize {
+        let image = try #require(UIImage(data: data))
+        let cgImage = try #require(image.cgImage)
+        return CGSize(width: cgImage.width, height: cgImage.height)
+    }
+
+    @Test func 長辺が2048pxを超える横長の写真は長辺2048pxに縮小し縦横比を保つ() throws {
+        let data = try #require(PhotoResizer.jpegData(from: image(width: 4000, height: 3000)))
+
+        #expect(try pixelSize(of: data) == CGSize(width: 2048, height: 1536))
+    }
+}
