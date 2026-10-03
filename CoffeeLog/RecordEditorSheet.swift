@@ -51,7 +51,13 @@ struct RecordEditorSheet: View {
                                 .keyboardType(.numberPad)
                         }
                     }
-                    LabeledTextField(label: "容量", text: $draft.volume, prompt: "例：200g、R")
+                    LabeledContent("容量") {
+                        HStack(spacing: 4) {
+                            TextField("容量", text: $draft.volume, prompt: Text("例：200"))
+                                .keyboardType(.numberPad)
+                            Text(RecordDraft.volumeUnit).foregroundStyle(Color.coffeeSecondaryText)
+                        }
+                    }
                     PhotoField(photo: $draft.photo)
                 }
                 .listRowBackground(Color.coffeeCard)
@@ -67,6 +73,9 @@ struct RecordEditorSheet: View {
                 }
                 .listRowBackground(Color.coffeeCard)
             }
+            // 入力欄以外をタップしたら、またはスクロールしたらキーボードを閉じる
+            .background(KeyboardDismissOnTap())
+            .scrollDismissesKeyboard(.immediately)
             .scrollContentBackground(.hidden)
             .background(Color.coffeeBackground)
             .foregroundStyle(Color.coffeeText)
@@ -81,6 +90,11 @@ struct RecordEditorSheet: View {
                         Button("変更を破棄", role: .destructive) { dismiss() }
                     }
                 }
+                // 数字キーボードには閉じるキーがないので、キーボードの上に完了を置く
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("完了") { dismissKeyboard() }
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("保存", systemImage: "checkmark", role: .confirm, action: save)
                         .disabled(!draft.canSave)
@@ -90,6 +104,10 @@ struct RecordEditorSheet: View {
         }
         // 入力途中に下スワイプで消えないようにする
         .interactiveDismissDisabled(hasChanges)
+    }
+
+    private func dismissKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 
     private func save() {
@@ -210,20 +228,50 @@ private struct TasteRow: View {
         HStack(spacing: 0) {
             Text(name).frame(width: 56, alignment: .leading)
             ForEach(1...5, id: \.self) { level in
-                let selected = value == level
                 Button {
-                    value = selected ? nil : level
+                    // 選んでいる値をもう一度押すと未入力に戻す
+                    value = value == level ? nil : level
                 } label: {
-                    Circle()
-                        .strokeBorder(Color.coffeeAccent, lineWidth: 2)
-                        .background(Circle().fill(selected ? Color.coffeeAccent : .clear))
-                        .frame(width: 18, height: 18)
+                    CoffeeBeanMark(filled: level <= (value ?? 0))
+                        .frame(width: 16, height: 21)
                         .frame(maxWidth: .infinity, minHeight: 44)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("\(name) \(level)")
-                .accessibilityAddTraits(selected ? .isSelected : [])
+                .accessibilityAddTraits(value == level ? .isSelected : [])
             }
+        }
+    }
+}
+
+/// コーヒー豆のマーク。値以下の豆を塗りつぶす
+private struct CoffeeBeanMark: View {
+    let filled: Bool
+
+    var body: some View {
+        ZStack {
+            if filled {
+                Ellipse().fill(Color.coffeeAccent)
+                BeanCrease().stroke(Color.coffeeCard, style: StrokeStyle(lineWidth: 1.6, lineCap: .round))
+            } else {
+                Ellipse().strokeBorder(Color.coffeeAccent, lineWidth: 1.6)
+                BeanCrease().stroke(Color.coffeeAccent, style: StrokeStyle(lineWidth: 1.6, lineCap: .round))
+            }
+        }
+        .rotationEffect(.degrees(20))
+    }
+}
+
+/// 豆の中央の S 字の溝
+private struct BeanCrease: Shape {
+    func path(in rect: CGRect) -> Path {
+        Path { path in
+            path.move(to: CGPoint(x: rect.midX, y: rect.minY + rect.height * 0.12))
+            path.addCurve(
+                to: CGPoint(x: rect.midX, y: rect.maxY - rect.height * 0.12),
+                control1: CGPoint(x: rect.midX - rect.width * 0.32, y: rect.minY + rect.height * 0.42),
+                control2: CGPoint(x: rect.midX + rect.width * 0.32, y: rect.minY + rect.height * 0.58)
+            )
         }
     }
 }
@@ -276,6 +324,60 @@ private struct PhotoField: View {
                 photo = PhotoResizer.jpegData(from: image)
             }
             .ignoresSafeArea()
+        }
+    }
+}
+
+/// 入力欄以外のタップでキーボードを閉じる。
+/// SwiftUI の TapGesture を Form に付けると開閉ボタンなどのタップを奪うので、
+/// 他の操作を止めない UIKit のタップ認識をウインドウに付ける
+private struct KeyboardDismissOnTap: UIViewRepresentable {
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        view.isUserInteractionEnabled = false
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+        // ウインドウに載るのを待ってから付ける
+        DispatchQueue.main.async {
+            guard context.coordinator.recognizer == nil, let window = uiView.window else { return }
+            let recognizer = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleTap))
+            recognizer.cancelsTouchesInView = false
+            recognizer.delegate = context.coordinator
+            window.addGestureRecognizer(recognizer)
+            context.coordinator.recognizer = recognizer
+        }
+    }
+
+    static func dismantleUIView(_ uiView: UIView, coordinator: Coordinator) {
+        if let recognizer = coordinator.recognizer {
+            recognizer.view?.removeGestureRecognizer(recognizer)
+        }
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    final class Coordinator: NSObject, UIGestureRecognizerDelegate {
+        var recognizer: UITapGestureRecognizer?
+
+        @objc func handleTap(_ recognizer: UITapGestureRecognizer) {
+            recognizer.view?.endEditing(true)
+        }
+
+        /// 入力欄そのもののタップでは閉じない（別の入力欄への移動を邪魔しない）
+        func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+            var view = touch.view
+            while let current = view {
+                if current is UITextField || current is UITextView { return false }
+                view = current.superview
+            }
+            return true
+        }
+
+        func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
+                               shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool {
+            true
         }
     }
 }
