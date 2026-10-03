@@ -4,6 +4,7 @@ import Testing
 
 // TODO（記録の編集）
 // - [x] 記録から下書きを作ると全項目が入る（未入力の文字列は空欄、価格は文字列）
+// - [x] 記録の容量は単位の g を外して下書きに入れる
 // - [x] 下書きを既存の記録に反映すると全項目が入れ替わる（空欄は nil、名称の空白除去、日付は 0 時）
 // - [x] 反映しても作成日時は変わらない
 // - [x] 保存できない下書きは反映せず、記録は元のまま
@@ -48,7 +49,7 @@ struct EditRecordTests {
         #expect(draft.purchaseType == .bean)
         #expect(draft.roast == .mediumDark)
         #expect(draft.priceText == "1200")
-        #expect(draft.volume == "100g")
+        #expect(draft.volume == "100")
         #expect(draft.photo == Data([0x01, 0x02]))
         #expect([draft.aroma, draft.acidity, draft.sweetness,
                  draft.body, draft.aftertaste, draft.bitterness] == [4, 3, 2, 5, 4, 1])
