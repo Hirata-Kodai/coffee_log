@@ -5,6 +5,7 @@ import Testing
 // TODO（記録の編集）
 // - [x] 記録から下書きを作ると全項目が入る（未入力の文字列は空欄、価格は文字列）
 // - [x] 記録の容量は単位の g を外して下書きに入れる
+// - [x] 記録から下書きを作ると v2 の項目も入る（未入力は空欄）
 // - [x] 下書きを既存の記録に反映すると全項目が入れ替わる（空欄は nil、名称の空白除去、日付は 0 時）
 // - [x] 反映しても作成日時は変わらない
 // - [x] 保存できない下書きは反映せず、記録は元のまま
@@ -122,5 +123,19 @@ struct EditRecordTests {
         #expect(record.name == "ケニア AB")
         #expect(record.rating == 4)
         #expect(record.price == 1200)
+    }
+
+    @Test func 記録から下書きを作るとv2の項目も入り未入力は空欄() {
+        let record = filledRecord()
+        record.region = "イルガチェフェ"
+        record.farm = "ゲデブ"
+        record.process = "ナチュラル"
+        record.altitude = nil
+        record.tastingNotes = "ベリー、ジャスミン"
+
+        let draft = RecordDraft(record: record)
+
+        #expect([draft.region, draft.farm, draft.process, draft.altitude, draft.tastingNotes]
+                == ["イルガチェフェ", "ゲデブ", "ナチュラル", "", "ベリー、ジャスミン"])
     }
 }
