@@ -4,7 +4,7 @@ import Testing
 // TODO（豆のカードの文字から項目を取り出す）
 // - [x] 見出し語と同じ行の値を取り出す（「農園：ゲデブ」）
 // - [x] 見出し語のあとの区切りは全角・半角のコロンと空白
-// - [ ] 英語の見出し語は大文字小文字を区別しない（「FARM Gedeb」）
+// - [x] 英語の見出し語は大文字小文字を区別しない（「FARM Gedeb」）
 // - [ ] 見出し語だけの行なら、次の行を値にする
 // - [ ] 次の行も見出し語なら、値にしない
 // - [ ] 同じ項目が何度も出たら最初の値を使う
@@ -21,5 +21,10 @@ struct CardParserTests {
     @Test(arguments: ["農園:ゲデブ", "農園 ゲデブ", "農園\u{3000}ゲデブ", "農園 ： ゲデブ "])
     func 見出し語のあとの区切りはコロンと空白(line: String) {
         #expect(CardParser.parse([line]).farm == "ゲデブ")
+    }
+
+    @Test(arguments: ["Farm: Gedeb", "FARM Gedeb", "farm：Gedeb"])
+    func 英語の見出し語は大文字小文字を区別しない(line: String) {
+        #expect(CardParser.parse([line]).farm == "Gedeb")
     }
 }

@@ -17,8 +17,10 @@ enum CardParser {
     static func parse(_ lines: [String]) -> CardFields {
         var fields = CardFields()
         for line in lines {
-            if let value = value(of: "農園", in: line) {
-                fields.farm = value
+            for label in ["農園", "Farm"] {
+                if let value = value(of: label, in: line) {
+                    fields.farm = value
+                }
             }
         }
         return fields
@@ -29,8 +31,9 @@ enum CardParser {
 
     /// 行が見出し語で始まっていれば、区切りを除いた残りを返す
     private static func value(of label: String, in line: String) -> String? {
-        guard line.hasPrefix(label) else { return nil }
-        let rest = line.dropFirst(label.count).trimmingCharacters(in: separators)
+        // 英語の見出し語は大文字小文字を区別しない
+        guard let range = line.range(of: label, options: [.anchored, .caseInsensitive]) else { return nil }
+        let rest = line[range.upperBound...].trimmingCharacters(in: separators)
         return rest.nilIfBlank
     }
 }
