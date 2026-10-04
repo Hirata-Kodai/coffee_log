@@ -59,6 +59,10 @@ enum CardParser {
     private static func match(_ label: String, in line: String) -> Match? {
         // 英語の見出し語は大文字小文字を区別しない
         guard let range = line.range(of: label, options: [.anchored, .caseInsensitive]) else { return nil }
+        // 「Farmhouse」「農園主」のように文字が続くものは見出し語ではない。直後は区切りか行末
+        if let next = line[range.upperBound...].unicodeScalars.first, !separators.contains(next) {
+            return nil
+        }
         let rest = line[range.upperBound...].trimmingCharacters(in: separators)
         return rest.nilIfBlank.map(Match.value) ?? .labelOnly
     }
