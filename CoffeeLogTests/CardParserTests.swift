@@ -9,7 +9,7 @@ import Testing
 // - [x] 次の行も見出し語なら、値にしない
 // - [x] 同じ項目が何度も出たら最初の値を使う
 // - [x] 見出し語のすぐあとに文字が続くものは見出し語と見なさない（「Regional」）
-// - [ ] 8 項目それぞれの見出し語を読む
+// - [x] 文字列の 7 項目それぞれの見出し語を読む
 // - [ ] 焙煎度はアプリの 4 段階に読み替え、読み替えられなければ nil
 struct CardParserTests {
     @Test func 見出し語と同じ行の値を取り出す() {
@@ -47,5 +47,40 @@ struct CardParserTests {
     @Test(arguments: ["Farmhouse Blend", "農園主のおすすめ"])
     func 見出し語のすぐあとに文字が続くものは見出し語と見なさない(line: String) {
         #expect(CardParser.parse([line, "ゲデブ"]).farm == nil)
+    }
+
+    @Test func 日本語のカードから7項目を読む() {
+        let fields = CardParser.parse([
+            "エチオピア イルガチェフェ ゲデブ",
+            "生産国：エチオピア",
+            "地域：イルガチェフェ",
+            "農園：ゲデブ",
+            "品種：在来種",
+            "精製方法：ナチュラル",
+            "標高：1,900–2,100m",
+            "フレーバー：ブルーベリー、ジャスミン",
+        ])
+
+        #expect(fields == CardFields(
+            origin: "エチオピア", region: "イルガチェフェ", farm: "ゲデブ", variety: "在来種",
+            process: "ナチュラル", altitude: "1,900–2,100m", tastingNotes: "ブルーベリー、ジャスミン"
+        ))
+    }
+
+    @Test func 英語のカードから7項目を読む() {
+        let fields = CardParser.parse([
+            "Country: Kenya",
+            "Region: Nyeri",
+            "Producer: Gichathaini Factory",
+            "Varietal: SL28, SL34",
+            "Process: Washed",
+            "Altitude: 1,700m",
+            "Tasting Notes: Blackcurrant, Grapefruit",
+        ])
+
+        #expect(fields == CardFields(
+            origin: "Kenya", region: "Nyeri", farm: "Gichathaini Factory", variety: "SL28, SL34",
+            process: "Washed", altitude: "1,700m", tastingNotes: "Blackcurrant, Grapefruit"
+        ))
     }
 }

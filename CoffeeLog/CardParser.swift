@@ -16,8 +16,13 @@ struct CardFields: Equatable {
 enum CardParser {
     /// 項目ごとの見出し語。長い見出し語を先に並べる（「精製方法」を「精製」より先に見る）
     private static let labels: [(field: WritableKeyPath<CardFields, String?>, labels: [String])] = [
-        (\.farm, ["農園", "Farm"]),
-        (\.process, ["精製方法", "精製", "Process"]),
+        (\.origin, ["生産国", "産地", "国", "Country", "Origin"]),
+        (\.region, ["生産地域", "地域", "地区", "エリア", "Region", "Area"]),
+        (\.farm, ["農園", "生産者", "農家", "Farm", "Producer", "Estate"]),
+        (\.variety, ["品種", "Varietal", "Variety", "Varieties", "Cultivar"]),
+        (\.process, ["精製方法", "精製", "生産処理", "プロセス", "Processing", "Process"]),
+        (\.altitude, ["標高", "高度", "Altitude", "Elevation"]),
+        (\.tastingNotes, ["テイスティングノート", "フレーバー", "風味", "Tasting Notes", "Flavor Notes", "Flavour", "Flavor", "Cup Notes"]),
     ]
 
     static func parse(_ lines: [String]) -> CardFields {
