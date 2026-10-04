@@ -14,24 +14,35 @@ struct CardFields: Equatable {
 
 /// カードの文字（上から順の行）から、見出し語を手がかりに項目を取り出す
 enum CardParser {
+    /// 項目ごとの見出し語。長い見出し語を先に並べる（「精製方法」を「精製」より先に見る）
+    private static let labels: [(field: WritableKeyPath<CardFields, String?>, labels: [String])] = [
+        (\.farm, ["農園", "Farm"]),
+        (\.process, ["精製方法", "精製", "Process"]),
+    ]
+
     static func parse(_ lines: [String]) -> CardFields {
         var fields = CardFields()
         for (index, line) in lines.enumerated() {
-            for label in ["農園", "Farm"] {
-                switch match(label, in: line) {
+            for (field, labels) in Self.labels {
+                // 同じ項目が何度も出たら最初の値を使う
+                guard fields[keyPath: field] == nil else { continue }
+                guard let match = labels.lazy.compactMap({ match($0, in: line) }).first else { continue }
+                switch match {
                 case .value(let value):
-                    fields.farm = value
+                    fields[keyPath: field] = value
                 case .labelOnly:
-                    // 見出し語だけの行なら、値は次の行に書かれている
-                    if index + 1 < lines.count {
-                        fields.farm = lines[index + 1].nilIfBlank
+                    // 見出し語だけの行なら、値は次の行に書かれている。次の行も見出し語なら値ではない
+                    if index + 1 < lines.count, !isLabelLine(lines[index + 1]) {
+                        fields[keyPath: field] = lines[index + 1].nilIfBlank
                     }
-                case nil:
-                    break
                 }
             }
         }
         return fields
+    }
+
+    private static func isLabelLine(_ line: String) -> Bool {
+        labels.contains { $0.labels.contains { match($0, in: line) != nil } }
     }
 
     private enum Match {

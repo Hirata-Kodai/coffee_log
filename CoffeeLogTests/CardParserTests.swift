@@ -6,8 +6,8 @@ import Testing
 // - [x] 見出し語のあとの区切りは全角・半角のコロンと空白
 // - [x] 英語の見出し語は大文字小文字を区別しない（「FARM Gedeb」）
 // - [x] 見出し語だけの行なら、次の行を値にする
-// - [ ] 次の行も見出し語なら、値にしない
-// - [ ] 同じ項目が何度も出たら最初の値を使う
+// - [x] 次の行も見出し語なら、値にしない
+// - [x] 同じ項目が何度も出たら最初の値を使う
 // - [ ] 見出し語のすぐあとに文字が続くものは見出し語と見なさない（「Regional」）
 // - [ ] 8 項目それぞれの見出し語を読む
 // - [ ] 焙煎度はアプリの 4 段階に読み替え、読み替えられなければ nil
@@ -31,5 +31,16 @@ struct CardParserTests {
     @Test(arguments: ["農園", "農園：", "Farm:"])
     func 見出し語だけの行なら次の行を値にする(label: String) {
         #expect(CardParser.parse([label, "ゲデブ"]).farm == "ゲデブ")
+    }
+
+    @Test func 次の行も見出し語なら値にしない() {
+        let fields = CardParser.parse(["農園", "精製方法", "ナチュラル"])
+
+        #expect(fields.farm == nil)
+        #expect(fields.process == "ナチュラル")
+    }
+
+    @Test func 同じ項目が何度も出たら最初の値を使う() {
+        #expect(CardParser.parse(["農園：ゲデブ", "Farm: Other"]).farm == "ゲデブ")
     }
 }
