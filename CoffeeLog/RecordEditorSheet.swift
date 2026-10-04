@@ -29,6 +29,10 @@ struct RecordEditorSheet: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    CardScanRow(draft: $draft, showsDetails: $showsDetails)
+                }
+                .listRowBackground(Color.coffeeCard)
                 Section("必須") {
                     LabeledTextField(label: "名称", text: $draft.name, prompt: "例：ケニア AB")
                         .focused($focusedField, equals: .name)
@@ -386,6 +390,80 @@ private struct PhotoField: View {
                 photo = PhotoResizer.jpegData(from: image)
             }
             .ignoresSafeArea()
+        }
+    }
+}
+
+/// 豆のカードを撮影かライブラリから選んで文字を読み取り、下書きの空欄を埋める
+private struct CardScanRow: View {
+    @Binding var draft: RecordDraft
+    @Binding var showsDetails: Bool
+    @State private var showsLibrary = false
+    @State private var showsCamera = false
+    @State private var libraryItem: PhotosPickerItem?
+    @State private var isReading = false
+    @State private var message: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Menu {
+                    if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                        Button("カードを撮る", systemImage: "camera") { showsCamera = true }
+                    }
+                    Button("ライブラリから選ぶ", systemImage: "photo.on.rectangle") { showsLibrary = true }
+                } label: {
+                    Label("豆のカードから読み取る", systemImage: "text.viewfinder")
+                        .foregroundStyle(Color.coffeeAccent)
+                }
+                .disabled(isReading)
+                Spacer()
+                if isReading {
+                    ProgressView()
+                        .accessibilityLabel("読み取り中")
+                }
+            }
+            if let message {
+                Text(message)
+                    .font(.footnote)
+                    .foregroundStyle(Color.coffeeSecondaryText)
+            }
+        }
+        .photosPicker(isPresented: $showsLibrary, selection: $libraryItem, matching: .images)
+        .onChange(of: libraryItem) { _, item in
+            guard let item else { return }
+            Task {
+                if let data = try? await item.loadTransferable(type: Data.self), let image = UIImage(data: data) {
+                    await read(image)
+                } else {
+                    message = "画像を開けませんでした。"
+                }
+                libraryItem = nil
+            }
+        }
+        .fullScreenCover(isPresented: $showsCamera) {
+            CameraPicker { image in
+                Task { await read(image) }
+            }
+            .ignoresSafeArea()
+        }
+    }
+
+    private func read(_ image: UIImage) async {
+        isReading = true
+        defer { isReading = false }
+        do {
+            let card = try await CardReader.read(from: image)
+            let filled = draft.fillBlanks(from: card)
+            if filled > 0 {
+                message = "\(filled) 項目を入力しました。内容を確かめてください。"
+                // 読み取る項目の多くは詳細欄にあるので開いておく
+                showsDetails = true
+            } else {
+                message = "空欄に入れられる項目が見つかりませんでした。"
+            }
+        } catch {
+            message = "画像から文字を読み取れませんでした。"
         }
     }
 }

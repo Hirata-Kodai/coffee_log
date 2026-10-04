@@ -12,6 +12,8 @@ enum CardReader {
         guard let cgImage = image.cgImage else { throw ReadError.unreadableImage }
         var request = RecognizeTextRequest()
         request.recognitionLevel = .accurate
+        // 農園名・品種などは辞書にない固有名詞が多いので、言語補正で別の語に寄せない
+        request.usesLanguageCorrection = false
         request.recognitionLanguages = [Locale.Language(identifier: "ja-JP"), Locale.Language(identifier: "en-US")]
         let observations = try await request.perform(on: cgImage, orientation: CGImagePropertyOrientation(image.imageOrientation))
         let texts = observations.compactMap { observation in
