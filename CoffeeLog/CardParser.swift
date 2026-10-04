@@ -25,29 +25,49 @@ enum CardParser {
         (\.tastingNotes, ["テイスティングノート", "フレーバー", "風味", "Tasting Notes", "Flavor Notes", "Flavour", "Flavor", "Cup Notes"]),
     ]
 
+    private static let roastLabels = ["焙煎度", "焙煎", "Roast Level", "Roast"]
+
     static func parse(_ lines: [String]) -> CardFields {
         var fields = CardFields()
-        for (index, line) in lines.enumerated() {
-            for (field, labels) in Self.labels {
+        for index in lines.indices {
+            for (field, labels) in Self.labels where fields[keyPath: field] == nil {
                 // 同じ項目が何度も出たら最初の値を使う
-                guard fields[keyPath: field] == nil else { continue }
-                guard let match = labels.lazy.compactMap({ match($0, in: line) }).first else { continue }
-                switch match {
-                case .value(let value):
-                    fields[keyPath: field] = value
-                case .labelOnly:
-                    // 見出し語だけの行なら、値は次の行に書かれている。次の行も見出し語なら値ではない
-                    if index + 1 < lines.count, !isLabelLine(lines[index + 1]) {
-                        fields[keyPath: field] = lines[index + 1].nilIfBlank
-                    }
-                }
+                fields[keyPath: field] = value(for: labels, at: index, in: lines)
+            }
+            if fields.roast == nil {
+                fields.roast = value(for: roastLabels, at: index, in: lines).flatMap(roast(from:))
             }
         }
         return fields
     }
 
+    /// index の行が見出し語で始まっていれば、その値を返す
+    private static func value(for labels: [String], at index: Int, in lines: [String]) -> String? {
+        guard let match = labels.lazy.compactMap({ match($0, in: lines[index]) }).first else { return nil }
+        switch match {
+        case .value(let value):
+            return value
+        case .labelOnly:
+            // 見出し語だけの行なら、値は次の行に書かれている。次の行も見出し語なら値ではない
+            guard index + 1 < lines.count, !isLabelLine(lines[index + 1]) else { return nil }
+            return lines[index + 1].nilIfBlank
+        }
+    }
+
     private static func isLabelLine(_ line: String) -> Bool {
-        labels.contains { $0.labels.contains { match($0, in: line) != nil } }
+        (labels.flatMap(\.labels) + roastLabels).contains { match($0, in: line) != nil }
+    }
+
+    /// カードの焙煎度をアプリの 4 段階に読み替える。中深を中・深より先に見る
+    private static func roast(from text: String) -> Roast? {
+        let text = text.lowercased()
+        let candidates: [(Roast, [String])] = [
+            (.mediumDark, ["中深", "medium-dark", "medium dark"]),
+            (.light, ["浅", "light"]),
+            (.dark, ["深", "dark"]),
+            (.medium, ["中", "medium"]),
+        ]
+        return candidates.first { _, words in words.contains { text.contains($0) } }?.0
     }
 
     private enum Match {

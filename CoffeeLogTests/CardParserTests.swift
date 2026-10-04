@@ -10,7 +10,7 @@ import Testing
 // - [x] 同じ項目が何度も出たら最初の値を使う
 // - [x] 見出し語のすぐあとに文字が続くものは見出し語と見なさない（「Regional」）
 // - [x] 文字列の 7 項目それぞれの見出し語を読む
-// - [ ] 焙煎度はアプリの 4 段階に読み替え、読み替えられなければ nil
+// - [x] 焙煎度はアプリの 4 段階に読み替え、読み替えられなければ nil
 struct CardParserTests {
     @Test func 見出し語と同じ行の値を取り出す() {
         let fields = CardParser.parse(["エチオピア ゲデブ", "農園：ゲデブ"])
@@ -82,5 +82,25 @@ struct CardParserTests {
             origin: "Kenya", region: "Nyeri", farm: "Gichathaini Factory", variety: "SL28, SL34",
             process: "Washed", altitude: "1,700m", tastingNotes: "Blackcurrant, Grapefruit"
         ))
+    }
+
+    @Test(arguments: [
+        ("焙煎度：浅煎り", Roast.light),
+        ("焙煎度：中煎り", .medium),
+        ("焙煎度：中深煎り（フルシティ）", .mediumDark),
+        ("焙煎：深煎り", .dark),
+        ("Roast: Light", .light),
+        ("Roast Level: Medium", .medium),
+        ("ROAST: Medium-Dark", .mediumDark),
+        ("Roast: Medium Dark", .mediumDark),
+        ("Roast: Dark", .dark),
+    ])
+    func 焙煎度はアプリの4段階に読み替える(line: String, expected: Roast) {
+        #expect(CardParser.parse([line]).roast == expected)
+    }
+
+    @Test(arguments: ["焙煎度：シティロースト", "Roast: 2024.09.01"])
+    func 焙煎度が読み替えられなければnil(line: String) {
+        #expect(CardParser.parse([line]).roast == nil)
     }
 }
