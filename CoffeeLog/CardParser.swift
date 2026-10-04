@@ -16,9 +16,21 @@ struct CardFields: Equatable {
 enum CardParser {
     static func parse(_ lines: [String]) -> CardFields {
         var fields = CardFields()
-        for line in lines where line.hasPrefix("農園：") {
-            fields.farm = String(line.dropFirst("農園：".count))
+        for line in lines {
+            if let value = value(of: "農園", in: line) {
+                fields.farm = value
+            }
         }
         return fields
+    }
+
+    /// 見出し語のあとの区切り
+    private static let separators = CharacterSet(charactersIn: ":：").union(.whitespaces)
+
+    /// 行が見出し語で始まっていれば、区切りを除いた残りを返す
+    private static func value(of label: String, in line: String) -> String? {
+        guard line.hasPrefix(label) else { return nil }
+        let rest = line.dropFirst(label.count).trimmingCharacters(in: separators)
+        return rest.nilIfBlank
     }
 }
