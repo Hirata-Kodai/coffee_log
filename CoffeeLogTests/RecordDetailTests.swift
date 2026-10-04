@@ -10,6 +10,7 @@ import Testing
 // - [x] 容量だけなら容量の行にする
 // - [x] 生産国・品種を出す
 // - [x] 並びは 購入形態 → 焙煎度 → 価格 → 生産国 → 品種
+// - [x] v2 の項目を足した並びは 購入形態 → 焙煎度 → 価格 → 生産国 → 地域 → 農園 → 品種 → 精製方法 → 標高（テイスティングノートは出さない）
 //
 // TODO（詳細画面の味）
 // - [x] 味が全部未入力ならチャートを出さない
@@ -78,6 +79,26 @@ struct RecordDetailTests {
         record.purchaseType = .cafe
 
         #expect(RecordDetail.infoRows(for: record).map(\.label) == ["購入形態", "焙煎度", "価格", "生産国", "品種"])
+    }
+
+    @Test func v2の項目を足した並びと値() {
+        let record = record()
+        record.altitude = "1,700m"
+        record.process = "ウォッシュト"
+        record.variety = "SL28"
+        record.farm = "ギチャサイニ農園"
+        record.region = "ニエリ"
+        record.origin = "ケニア"
+        record.tastingNotes = "ブラックカラント"
+
+        #expect(RecordDetail.infoRows(for: record) == [
+            .init(label: "生産国", value: "ケニア"),
+            .init(label: "地域", value: "ニエリ"),
+            .init(label: "農園", value: "ギチャサイニ農園"),
+            .init(label: "品種", value: "SL28"),
+            .init(label: "精製方法", value: "ウォッシュト"),
+            .init(label: "標高", value: "1,700m"),
+        ])
     }
 
     @Test func 味が全部未入力ならチャートを出さない() {

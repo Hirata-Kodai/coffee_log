@@ -24,11 +24,19 @@ enum RecordDetail {
         } else if let volume = record.volume {
             rows.append(Row(label: "容量", value: volume))
         }
-        if let origin = record.origin {
-            rows.append(Row(label: "生産国", value: origin))
-        }
-        if let variety = record.variety {
-            rows.append(Row(label: "品種", value: variety))
+        // 産地の大きい順（生産国 → 地域 → 農園）に並べ、そのあとに豆と精製の情報を続ける
+        let texts: [(label: String, value: String?)] = [
+            ("生産国", record.origin),
+            ("地域", record.region),
+            ("農園", record.farm),
+            ("品種", record.variety),
+            ("精製方法", record.process),
+            ("標高", record.altitude),
+        ]
+        for (label, value) in texts {
+            if let value {
+                rows.append(Row(label: label, value: value))
+            }
         }
         return rows
     }

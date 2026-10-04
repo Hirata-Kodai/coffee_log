@@ -67,6 +67,17 @@ struct RecordDetailScreen: View {
                     .padding(.horizontal, 16)
                 }
 
+                if let tastingNotes = record.tastingNotes {
+                    SectionHeading("テイスティングノート")
+                    Text(tastingNotes)
+                        .lineSpacing(6)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
+                        .background(Color.coffeeCard, in: .rect(cornerRadius: 12))
+                        .padding(.horizontal, 16)
+                }
+
                 if let memo = record.memo {
                     SectionHeading("メモ")
                     Text(memo)

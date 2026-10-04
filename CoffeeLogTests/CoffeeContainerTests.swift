@@ -5,13 +5,14 @@ import Testing
 
 // TODO（アプリの ModelContainer）
 // - [x] スキーマ v1 と移行計画を使うコンテナを作れる
+// - [x] 農園などを足したスキーマ v2 を使う
 // - [x] 既定は端末に保存し、inMemory ならメモリのみ（テスト・Preview 用）
 @MainActor
 struct CoffeeContainerTests {
-    @Test func スキーマv1と移行計画を使うコンテナを作れる() throws {
+    @Test func 最新のスキーマv2と移行計画を使うコンテナを作れる() throws {
         let container = try ModelContainer.coffeeLog(inMemory: true)
 
-        #expect(container.schema == Schema(versionedSchema: CoffeeSchemaV1.self))
+        #expect(container.schema == Schema(versionedSchema: CoffeeSchemaV2.self))
         let plan = try #require(container.migrationPlan)
         #expect(ObjectIdentifier(plan) == ObjectIdentifier(CoffeeMigrationPlan.self))
     }

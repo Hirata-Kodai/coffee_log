@@ -33,6 +33,13 @@ struct RecordDraft: Equatable {
     var aftertaste: Int? = nil
     var bitterness: Int? = nil
 
+    // v2 で追加した任意の文字列項目。空欄は "" で持ち、保存時に nil にそろえる
+    var region: String = ""
+    var farm: String = ""
+    var process: String = ""
+    var altitude: String = ""
+    var tastingNotes: String = ""
+
     var canSave: Bool {
         hasName && hasValidRating && Self.isBlankOrNonNegativeInteger(priceText)
             && Self.isBlankOrNonNegativeInteger(volume)
@@ -67,6 +74,11 @@ struct RecordDraft: Equatable {
         record.body = body
         record.aftertaste = aftertaste
         record.bitterness = bitterness
+        record.region = region.nilIfBlank
+        record.farm = farm.nilIfBlank
+        record.process = process.nilIfBlank
+        record.altitude = altitude.nilIfBlank
+        record.tastingNotes = tastingNotes.nilIfBlank
         return true
     }
 
@@ -113,7 +125,12 @@ extension RecordDraft {
             sweetness: record.sweetness,
             body: record.body,
             aftertaste: record.aftertaste,
-            bitterness: record.bitterness
+            bitterness: record.bitterness,
+            region: record.region ?? "",
+            farm: record.farm ?? "",
+            process: record.process ?? "",
+            altitude: record.altitude ?? "",
+            tastingNotes: record.tastingNotes ?? ""
         )
     }
 

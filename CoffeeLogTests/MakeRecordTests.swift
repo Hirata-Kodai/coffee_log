@@ -8,6 +8,7 @@ import Testing
 // - [x] 日付はその日の 0 時にそろえる
 // - [x] 任意の文字列項目（店・生産国・品種・メモ）は前後の空白を除き、空欄は nil にする
 // - [x] 容量は数字に g を付けて保存し、空欄は nil にする
+// - [x] v2 の項目（地域・農園・精製方法・標高・テイスティングノート）も前後の空白を除き、空欄は nil にする
 // - [x] 価格は空欄なら nil、数字なら Int にする
 // - [x] 購入形態・焙煎度・写真・味 6 軸はそのまま引き継ぐ
 // - [x] 保存できない下書きからは作れない
@@ -144,5 +145,22 @@ struct MakeRecordTests {
         let record = try #require(draft.makeRecord(now: now))
 
         #expect(record.volume == nil)
+    }
+
+    @Test func v2の項目も前後の空白を除いて保存し空欄はnilにする() throws {
+        var draft = RecordDraft(name: "ケニア AB", rating: 4)
+        draft.region = " ニエリ "
+        draft.farm = "\u{3000}ギチャサイニ農園"
+        draft.process = "ウォッシュト\n"
+        draft.altitude = " "
+        draft.tastingNotes = ""
+
+        let record = try #require(draft.makeRecord(now: now))
+
+        #expect(record.region == "ニエリ")
+        #expect(record.farm == "ギチャサイニ農園")
+        #expect(record.process == "ウォッシュト")
+        #expect(record.altitude == nil)
+        #expect(record.tastingNotes == nil)
     }
 }

@@ -2,12 +2,12 @@ import Foundation
 
 /// 入力シートの文字入力欄。キーボード上の ^ ∨ で移る順に並べる
 enum EditorField: CaseIterable {
-    case name, shop, price, volume, origin, variety, memo
+    case name, shop, price, volume, origin, region, farm, variety, process, altitude, tastingNotes, memo
 
     /// 詳細（初期は閉じる）の中にある欄
     var isInDetails: Bool {
         switch self {
-        case .origin, .variety, .memo: true
+        case .origin, .region, .farm, .variety, .process, .altitude, .tastingNotes, .memo: true
         case .name, .shop, .price, .volume: false
         }
     }
