@@ -16,24 +16,39 @@ struct CardFields: Equatable {
 enum CardParser {
     static func parse(_ lines: [String]) -> CardFields {
         var fields = CardFields()
-        for line in lines {
+        for (index, line) in lines.enumerated() {
             for label in ["農園", "Farm"] {
-                if let value = value(of: label, in: line) {
+                switch match(label, in: line) {
+                case .value(let value):
                     fields.farm = value
+                case .labelOnly:
+                    // 見出し語だけの行なら、値は次の行に書かれている
+                    if index + 1 < lines.count {
+                        fields.farm = lines[index + 1].nilIfBlank
+                    }
+                case nil:
+                    break
                 }
             }
         }
         return fields
     }
 
+    private enum Match {
+        /// 見出し語と同じ行に値がある
+        case value(String)
+        /// 見出し語だけの行
+        case labelOnly
+    }
+
     /// 見出し語のあとの区切り
     private static let separators = CharacterSet(charactersIn: ":：").union(.whitespaces)
 
-    /// 行が見出し語で始まっていれば、区切りを除いた残りを返す
-    private static func value(of label: String, in line: String) -> String? {
+    /// 行が見出し語で始まっているか。始まっていれば、同じ行の値（区切りを除いた残り）があるかどうかを返す
+    private static func match(_ label: String, in line: String) -> Match? {
         // 英語の見出し語は大文字小文字を区別しない
         guard let range = line.range(of: label, options: [.anchored, .caseInsensitive]) else { return nil }
         let rest = line[range.upperBound...].trimmingCharacters(in: separators)
-        return rest.nilIfBlank
+        return rest.nilIfBlank.map(Match.value) ?? .labelOnly
     }
 }
