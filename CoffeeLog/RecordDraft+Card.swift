@@ -1,8 +1,10 @@
 import Foundation
 
 extension RecordDraft {
-    /// 豆のカードから読み取った値を、下書きの空欄だけに入れる（自分で入れた値は変えない）
-    mutating func fillBlanks(from card: CardFields) {
+    /// 豆のカードから読み取った値を、下書きの空欄だけに入れる（自分で入れた値は変えない）。入れた項目の数を返す
+    @discardableResult
+    mutating func fillBlanks(from card: CardFields) -> Int {
+        var filled = 0
         let pairs: [(draft: WritableKeyPath<RecordDraft, String>, card: KeyPath<CardFields, String?>)] = [
             (\.origin, \.origin),
             (\.region, \.region),
@@ -16,10 +18,13 @@ extension RecordDraft {
             // 空白だけの欄は空欄と見なす
             if self[keyPath: draftField].nilIfBlank == nil, let value = card[keyPath: cardField] {
                 self[keyPath: draftField] = value
+                filled += 1
             }
         }
-        if roast == nil {
-            roast = card.roast
+        if roast == nil, let cardRoast = card.roast {
+            roast = cardRoast
+            filled += 1
         }
+        return filled
     }
 }
