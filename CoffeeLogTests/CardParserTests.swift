@@ -12,7 +12,21 @@ import Testing
 // - [x] 見出し語のすぐあとに文字が続くものは見出し語と見なさない（「Regional」）
 // - [x] 文字列の 7 項目それぞれの見出し語を読む
 // - [x] 焙煎度はアプリの 4 段階に読み替え、読み替えられなければ nil
+//
+// TODO（文字のかたまりの位置から値を探す。日英 2 列のカード対応）
+// - [x] 右隣が見出しなら値にせず、真下のかたまりを値にする
+// - [ ] 見出しから離れた下のかたまりは値にしない
+// - [ ] 見出しの右隣のかたまりを値にする（表形式のカード）
+// - [ ] 日本語と英語の値があれば日本語を優先する
+// - [ ] 「生豆生産国」「精選」を見出し語に足す
+// - [ ] 中間の焙煎度（Medium Light、ミディアムライト）は入れない。カタカナの焙煎度も読む
+// - [ ] 実機で読んだ小川珈琲のカードから項目を取り出す
 struct CardParserTests {
+    /// 位置を指定した文字のかたまり（位置は左下が原点の割合）
+    private func text(_ string: String, x: CGFloat, y: CGFloat, width: CGFloat = 0.15, height: CGFloat = 0.02) -> RecognizedText {
+        RecognizedText(text: string, box: CGRect(x: x, y: y, width: width, height: height))
+    }
+
     /// 1 行を 1 つの文字のかたまりとして、上から順に縦に積む（位置は左下が原点の割合）
     private func stacked(_ lines: [String]) -> [RecognizedText] {
         lines.enumerated().map { index, line in
@@ -110,5 +124,18 @@ struct CardParserTests {
     @Test(arguments: ["焙煎度：シティロースト", "Roast: 2024.09.01"])
     func 焙煎度が読み替えられなければnil(line: String) {
         #expect(CardParser.parse(stacked([line])).roast == nil)
+    }
+
+    @Test func 右隣が見出しなら値にせず真下のかたまりを値にする() {
+        // 左に英語、右に日本語。どちらも見出しの下に値がある
+        let fields = CardParser.parse([
+            text("Country", x: 0.29, y: 0.665, width: 0.075, height: 0.015),
+            text("Guatemala", x: 0.29, y: 0.639, width: 0.114, height: 0.017),
+            text("生豆生産国", x: 0.644, y: 0.666, width: 0.100, height: 0.019),
+            text("Region", x: 0.29, y: 0.610, width: 0.067, height: 0.015),
+            text("地域", x: 0.703, y: 0.615, width: 0.042, height: 0.019),
+        ])
+
+        #expect(fields.origin == "Guatemala")
     }
 }

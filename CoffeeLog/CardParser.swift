@@ -1,3 +1,4 @@
+import CoreGraphics
 import Foundation
 
 /// 豆のカードから読み取った項目。読めなかった項目は nil
@@ -29,38 +30,44 @@ enum CardParser {
 
     /// 文字認識の結果（位置付きの文字のかたまり）から項目を取り出す
     static func parse(_ texts: [RecognizedText]) -> CardFields {
-        parse(lines: CardTextRows.lines(from: texts))
-    }
-
-    private static func parse(lines: [String]) -> CardFields {
+        // 上から順（左下が原点なので y が大きいほど上）、同じ高さなら左から
+        let ordered = texts.sorted { ($0.box.midY, -$0.box.minX) > ($1.box.midY, -$1.box.minX) }
         var fields = CardFields()
-        for index in lines.indices {
+        for text in ordered {
             for (field, labels) in Self.labels where fields[keyPath: field] == nil {
                 // 同じ項目が何度も出たら最初の値を使う
-                fields[keyPath: field] = value(for: labels, at: index, in: lines)
+                fields[keyPath: field] = value(for: labels, at: text, in: ordered)
             }
             if fields.roast == nil {
-                fields.roast = value(for: roastLabels, at: index, in: lines).flatMap(roast(from:))
+                fields.roast = value(for: roastLabels, at: text, in: ordered).flatMap(roast(from:))
             }
         }
         return fields
     }
 
-    /// index の行が見出し語で始まっていれば、その値を返す
-    private static func value(for labels: [String], at index: Int, in lines: [String]) -> String? {
-        guard let match = labels.lazy.compactMap({ match($0, in: lines[index]) }).first else { return nil }
-        switch match {
-        case .value(let value):
+    /// text が見出し語で始まっていれば、その値を返す。値は同じかたまりの残り、なければ真下のかたまり
+    private static func value(for labels: [String], at text: RecognizedText, in texts: [RecognizedText]) -> String? {
+        guard let match = labels.lazy.compactMap({ match($0, in: text.text) }).first else { return nil }
+        if case .value(let value) = match {
             return value
-        case .labelOnly:
-            // 見出し語だけの行なら、値は次の行に書かれている。次の行も見出し語なら値ではない
-            guard index + 1 < lines.count, !isLabelLine(lines[index + 1]) else { return nil }
-            return lines[index + 1].nilIfBlank
         }
+        guard let below = nearestBelow(text, in: texts), !isLabel(below.text) else { return nil }
+        return below.text.nilIfBlank
     }
 
-    private static func isLabelLine(_ line: String) -> Bool {
-        (labels.flatMap(\.labels) + roastLabels).contains { match($0, in: line) != nil }
+    /// 真下にある一番近いかたまり。横位置が重なり、見出しの高さの 1.5 倍より近いものに限る
+    private static func nearestBelow(_ text: RecognizedText, in texts: [RecognizedText]) -> RecognizedText? {
+        texts
+            .filter { other in
+                let gap = text.box.minY - other.box.maxY
+                let overlaps = other.box.minX < text.box.maxX && text.box.minX < other.box.maxX
+                return other != text && overlaps && gap >= -text.box.height / 2 && gap < text.box.height * 1.5
+            }
+            .max { $0.box.maxY < $1.box.maxY }
+    }
+
+    private static func isLabel(_ string: String) -> Bool {
+        (labels.flatMap(\.labels) + roastLabels).contains { match($0, in: string) != nil }
     }
 
     /// カードの焙煎度をアプリの 4 段階に読み替える。中深を中・深より先に見る
