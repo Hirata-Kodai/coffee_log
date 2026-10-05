@@ -33,16 +33,26 @@ enum CardParser {
         // 上から順（左下が原点なので y が大きいほど上）、同じ高さなら左から
         let ordered = texts.sorted { ($0.box.midY, -$0.box.minX) > ($1.box.midY, -$1.box.minX) }
         var fields = CardFields()
-        for text in ordered {
-            for (field, labels) in Self.labels where fields[keyPath: field] == nil {
-                // 同じ項目が何度も出たら最初の値を使う
-                fields[keyPath: field] = value(for: labels, at: text, in: ordered)
-            }
-            if fields.roast == nil {
-                fields.roast = value(for: roastLabels, at: text, in: ordered).flatMap(roast(from:))
+        for (field, labels) in Self.labels {
+            fields[keyPath: field] = preferredValue(ordered.compactMap { value(for: labels, at: $0, in: ordered) })
+        }
+        fields.roast = preferredValue(ordered.compactMap { value(for: roastLabels, at: $0, in: ordered) })
+            .flatMap(roast(from:))
+        return fields
+    }
+
+    /// 日英の両方が書かれたカードでは日本語の値を使う。それ以外は最初に出た値
+    private static func preferredValue(_ values: [String]) -> String? {
+        values.first(where: containsJapanese) ?? values.first
+    }
+
+    private static func containsJapanese(_ string: String) -> Bool {
+        string.unicodeScalars.contains { scalar in
+            switch scalar.value {
+            case 0x3040...0x30FF, 0x4E00...0x9FFF: true  // ひらがな・カタカナ・漢字
+            default: false
             }
         }
-        return fields
     }
 
     /// text が見出し語で始まっていれば、その値を返す。値は同じかたまりの残り、右隣、真下の順に探す（見出しのかたまりは値にしない）

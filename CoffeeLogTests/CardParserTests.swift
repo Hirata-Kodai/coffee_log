@@ -17,7 +17,7 @@ import Testing
 // - [x] 右隣が見出しなら値にせず、真下のかたまりを値にする
 // - [x] 見出しから離れた下のかたまりは値にしない
 // - [x] 見出しの右隣のかたまりを値にする（表形式のカード）
-// - [ ] 日本語と英語の値があれば日本語を優先する
+// - [x] 日本語と英語の値があれば日本語を優先する
 // - [x] 「生豆生産国」「精選」を見出し語に足す
 // - [ ] 中間の焙煎度（Medium Light、ミディアムライト）は入れない。カタカナの焙煎度も読む
 // - [ ] 実機で読んだ小川珈琲のカードから項目を取り出す
@@ -166,5 +166,21 @@ struct CardParserTests {
 
         #expect(fields.origin == "グアテマラ")
         #expect(fields.process == "ウォッシュド")
+    }
+
+    @Test func 日本語と英語の値があれば日本語を優先する() {
+        // 左に英語、右に日本語。日本語の見出しをわずかに下にして、上から順に見ると英語が先に出るようにする
+        let fields = CardParser.parse([
+            text("Country", x: 0.29, y: 0.665, width: 0.075, height: 0.015),
+            text("Guatemala", x: 0.29, y: 0.639, width: 0.114, height: 0.017),
+            text("生豆生産国", x: 0.644, y: 0.660, width: 0.100, height: 0.019),
+            text("グアテマラ", x: 0.631, y: 0.636, width: 0.111, height: 0.021),
+            text("Process", x: 0.29, y: 0.408, width: 0.075, height: 0.013),
+            text("Washed", x: 0.29, y: 0.383, width: 0.083, height: 0.017),
+        ])
+
+        #expect(fields.origin == "グアテマラ")
+        // 日本語の値がなければ英語
+        #expect(fields.process == "Washed")
     }
 }
