@@ -92,16 +92,21 @@ enum CardParser {
         (labels.flatMap(\.labels) + roastLabels).contains { match($0, in: string) != nil }
     }
 
-    /// カードの焙煎度をアプリの 4 段階に読み替える。中深を中・深より先に見る
+    /// カードの焙煎度をアプリの 4 段階に読み替える。中深を中・深より先に見る。
+    /// 浅と中の間（Medium Light、中浅煎りなど）は 4 段階のどれとも決められないので nil
     private static func roast(from text: String) -> Roast? {
         let text = text.lowercased()
-        let candidates: [(Roast, [String])] = [
-            (.mediumDark, ["中深", "medium-dark", "medium dark"]),
-            (.light, ["浅", "light"]),
-            (.dark, ["深", "dark"]),
-            (.medium, ["中", "medium"]),
-        ]
-        return candidates.first { _, words in words.contains { text.contains($0) } }?.0
+        func has(_ words: [String]) -> Bool { words.contains { text.contains($0) } }
+        let mediumDark = ["中深", "medium-dark", "medium dark", "ミディアムダーク"]
+        let light = ["浅", "light", "ライト"]
+        let dark = ["深", "dark", "ダーク"]
+        let medium = ["中", "medium", "ミディアム"]
+
+        if has(mediumDark) { return .mediumDark }
+        if has(light) { return has(medium) ? nil : .light }
+        if has(dark) { return .dark }
+        if has(medium) { return .medium }
+        return nil
     }
 
     private enum Match {

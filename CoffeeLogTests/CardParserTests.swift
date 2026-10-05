@@ -19,7 +19,7 @@ import Testing
 // - [x] 見出しの右隣のかたまりを値にする（表形式のカード）
 // - [x] 日本語と英語の値があれば日本語を優先する
 // - [x] 「生豆生産国」「精選」を見出し語に足す
-// - [ ] 中間の焙煎度（Medium Light、ミディアムライト）は入れない。カタカナの焙煎度も読む
+// - [x] 中間の焙煎度（Medium Light、ミディアムライト）は入れない。カタカナの焙煎度も読む
 // - [ ] 実機で読んだ小川珈琲のカードから項目を取り出す
 struct CardParserTests {
     /// 位置を指定した文字のかたまり（位置は左下が原点の割合）
@@ -182,5 +182,20 @@ struct CardParserTests {
         #expect(fields.origin == "グアテマラ")
         // 日本語の値がなければ英語
         #expect(fields.process == "Washed")
+    }
+
+    @Test(arguments: [
+        ("焙煎度：ライトロースト", Roast.light),
+        ("焙煎度：ミディアムロースト", .medium),
+        ("焙煎度：ミディアムダーク", .mediumDark),
+        ("焙煎度：ダークロースト", .dark),
+    ])
+    func カタカナの焙煎度も読む(line: String, expected: Roast) {
+        #expect(CardParser.parse(stacked([line])).roast == expected)
+    }
+
+    @Test(arguments: ["Roast Level: Medium Light", "焙煎度：ミディアムライト", "焙煎度：中浅煎り"])
+    func 中間の焙煎度は入れない(line: String) {
+        #expect(CardParser.parse(stacked([line])).roast == nil)
     }
 }
