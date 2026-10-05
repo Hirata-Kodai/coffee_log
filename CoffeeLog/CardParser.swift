@@ -27,7 +27,12 @@ enum CardParser {
 
     private static let roastLabels = ["焙煎度", "焙煎", "Roast Level", "Roast"]
 
-    static func parse(_ lines: [String]) -> CardFields {
+    /// 文字認識の結果（位置付きの文字のかたまり）から項目を取り出す
+    static func parse(_ texts: [RecognizedText]) -> CardFields {
+        parse(lines: CardTextRows.lines(from: texts))
+    }
+
+    private static func parse(lines: [String]) -> CardFields {
         var fields = CardFields()
         for index in lines.indices {
             for (field, labels) in Self.labels where fields[keyPath: field] == nil {

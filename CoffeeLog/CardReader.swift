@@ -21,7 +21,7 @@ enum CardReader {
                 RecognizedText(text: $0.string, box: observation.boundingBox.cgRect)
             }
         }
-        return CardParser.parse(CardTextRows.lines(from: texts))
+        return CardParser.parse(texts)
     }
 }
 
