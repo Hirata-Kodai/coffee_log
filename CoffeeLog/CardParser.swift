@@ -17,11 +17,11 @@ struct CardFields: Equatable {
 enum CardParser {
     /// 項目ごとの見出し語。長い見出し語を先に並べる（「精製方法」を「精製」より先に見る）
     private static let labels: [(field: WritableKeyPath<CardFields, String?>, labels: [String])] = [
-        (\.origin, ["生産国", "産地", "国", "Country", "Origin"]),
+        (\.origin, ["生豆生産国", "生産国", "産地", "国", "Country", "Origin"]),
         (\.region, ["生産地域", "地域", "地区", "エリア", "Region", "Area"]),
         (\.farm, ["農園", "生産者", "農家", "Farm", "Producer", "Estate"]),
         (\.variety, ["品種", "Varietal", "Variety", "Varieties", "Cultivar"]),
-        (\.process, ["精製方法", "精製", "生産処理", "プロセス", "Processing", "Process"]),
+        (\.process, ["精製方法", "精製", "精選", "生産処理", "プロセス", "Processing", "Process"]),
         (\.altitude, ["標高", "高度", "Altitude", "Elevation"]),
         (\.tastingNotes, ["テイスティングノート", "フレーバー", "風味", "Tasting Notes", "Flavor Notes", "Flavour", "Flavor", "Cup Notes"]),
     ]
@@ -45,14 +45,26 @@ enum CardParser {
         return fields
     }
 
-    /// text が見出し語で始まっていれば、その値を返す。値は同じかたまりの残り、なければ真下のかたまり
+    /// text が見出し語で始まっていれば、その値を返す。値は同じかたまりの残り、右隣、真下の順に探す（見出しのかたまりは値にしない）
     private static func value(for labels: [String], at text: RecognizedText, in texts: [RecognizedText]) -> String? {
         guard let match = labels.lazy.compactMap({ match($0, in: text.text) }).first else { return nil }
         if case .value(let value) = match {
             return value
         }
-        guard let below = nearestBelow(text, in: texts), !isLabel(below.text) else { return nil }
-        return below.text.nilIfBlank
+        let neighbors = [nearestRight(text, in: texts), nearestBelow(text, in: texts)]
+        return neighbors.lazy.compactMap { $0 }.first { !isLabel($0.text) }?.text.nilIfBlank
+    }
+
+    /// 同じ高さで右にある一番近いかたまり（表形式のカード）
+    private static func nearestRight(_ text: RecognizedText, in texts: [RecognizedText]) -> RecognizedText? {
+        texts
+            .filter { $0 != text && $0.box.minX >= text.box.maxX && isSameRow($0, text) }
+            .min { $0.box.minX < $1.box.minX }
+    }
+
+    /// 縦の中心のずれが、低いほうのかたまりの高さの半分より小さければ同じ行（少しの傾きを許す）
+    private static func isSameRow(_ a: RecognizedText, _ b: RecognizedText) -> Bool {
+        abs(a.box.midY - b.box.midY) < min(a.box.height, b.box.height) / 2
     }
 
     /// 真下にある一番近いかたまり。横位置が重なり、見出しの高さの 1.5 倍より近いものに限る

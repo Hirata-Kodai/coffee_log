@@ -15,10 +15,10 @@ import Testing
 //
 // TODO（文字のかたまりの位置から値を探す。日英 2 列のカード対応）
 // - [x] 右隣が見出しなら値にせず、真下のかたまりを値にする
-// - [ ] 見出しから離れた下のかたまりは値にしない
-// - [ ] 見出しの右隣のかたまりを値にする（表形式のカード）
+// - [x] 見出しから離れた下のかたまりは値にしない
+// - [x] 見出しの右隣のかたまりを値にする（表形式のカード）
 // - [ ] 日本語と英語の値があれば日本語を優先する
-// - [ ] 「生豆生産国」「精選」を見出し語に足す
+// - [x] 「生豆生産国」「精選」を見出し語に足す
 // - [ ] 中間の焙煎度（Medium Light、ミディアムライト）は入れない。カタカナの焙煎度も読む
 // - [ ] 実機で読んだ小川珈琲のカードから項目を取り出す
 struct CardParserTests {
@@ -137,5 +137,34 @@ struct CardParserTests {
         ])
 
         #expect(fields.origin == "Guatemala")
+    }
+
+    @Test func 見出しから離れた下のかたまりは値にしない() {
+        let fields = CardParser.parse([
+            text("農園", x: 0.1, y: 0.80, height: 0.02),
+            text("小川珈琲", x: 0.1, y: 0.50, height: 0.02),
+        ])
+
+        #expect(fields.farm == nil)
+    }
+
+    @Test func 見出しの右隣のかたまりを値にする() {
+        // 見出しの列と値の列が分かれた表形式
+        let fields = CardParser.parse([
+            text("農園", x: 0.065, y: 0.575, width: 0.082, height: 0.040),
+            text("ゲデブ", x: 0.350, y: 0.575, width: 0.121, height: 0.039),
+            text("品種", x: 0.063, y: 0.479, width: 0.090, height: 0.050),
+            text("在来種", x: 0.350, y: 0.487, width: 0.121, height: 0.037),
+        ])
+
+        #expect(fields.farm == "ゲデブ")
+        #expect(fields.variety == "在来種")
+    }
+
+    @Test func 生豆生産国と精選を見出し語として読む() {
+        let fields = CardParser.parse(stacked(["生豆生産国：グアテマラ", "精選：ウォッシュド"]))
+
+        #expect(fields.origin == "グアテマラ")
+        #expect(fields.process == "ウォッシュド")
     }
 }
