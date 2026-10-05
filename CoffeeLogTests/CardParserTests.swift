@@ -20,7 +20,7 @@ import Testing
 // - [x] 日本語と英語の値があれば日本語を優先する
 // - [x] 「生豆生産国」「精選」を見出し語に足す
 // - [x] 中間の焙煎度（Medium Light、ミディアムライト）は入れない。カタカナの焙煎度も読む
-// - [ ] 実機で読んだ小川珈琲のカードから項目を取り出す
+// - [x] 実機で読んだ小川珈琲のカードから項目を取り出す
 struct CardParserTests {
     /// 位置を指定した文字のかたまり（位置は左下が原点の割合）
     private func text(_ string: String, x: CGFloat, y: CGFloat, width: CGFloat = 0.15, height: CGFloat = 0.02) -> RecognizedText {
@@ -197,5 +197,63 @@ struct CardParserTests {
     @Test(arguments: ["Roast Level: Medium Light", "焙煎度：ミディアムライト", "焙煎度：中浅煎り"])
     func 中間の焙煎度は入れない(line: String) {
         #expect(CardParser.parse(stacked([line])).roast == nil)
+    }
+
+    /// 実機（iPhone 14）で小川珈琲のカードを読んだときの Vision の結果（2026-10-05 のログ）。
+    /// 左に英語、右に日本語の 2 列で、どちらも見出しの下に値がある。「Producet」「焙煎良」は誤認識
+    private var ogawaCard: [RecognizedText] {
+        [
+            text("no.05", x: 0.281, y: 0.781, width: 0.075, height: 0.021),
+            text("Guatemala El Injerto", x: 0.283, y: 0.744, width: 0.319, height: 0.027),
+            text("グアテマラ エルインヘルト", x: 0.283, y: 0.719, width: 0.236, height: 0.021),
+            text("Country", x: 0.286, y: 0.665, width: 0.075, height: 0.015),
+            text("Guatemala", x: 0.289, y: 0.639, width: 0.114, height: 0.017),
+            text("Region", x: 0.289, y: 0.610, width: 0.067, height: 0.015),
+            text("Huehuetenango", x: 0.289, y: 0.587, width: 0.164, height: 0.015),
+            text("Producet", x: 0.292, y: 0.560, width: 0.083, height: 0.013),
+            text("El Injerto", x: 0.294, y: 0.535, width: 0.092, height: 0.015),
+            text("Elevation", x: 0.294, y: 0.510, width: 0.086, height: 0.013),
+            text("1500-1900m", x: 0.292, y: 0.483, width: 0.125, height: 0.020),
+            text("Varietal", x: 0.294, y: 0.458, width: 0.075, height: 0.015),
+            text("Catuai", x: 0.294, y: 0.433, width: 0.073, height: 0.018),
+            text("Process", x: 0.294, y: 0.408, width: 0.075, height: 0.013),
+            text("Washed", x: 0.297, y: 0.383, width: 0.083, height: 0.017),
+            text("Roast Level", x: 0.297, y: 0.358, width: 0.106, height: 0.012),
+            text("Medium Light", x: 0.297, y: 0.331, width: 0.147, height: 0.017),
+            text("生豆生産国", x: 0.644, y: 0.666, width: 0.100, height: 0.019),
+            text("グアテマラ", x: 0.631, y: 0.642, width: 0.111, height: 0.021),
+            text("地域", x: 0.703, y: 0.615, width: 0.042, height: 0.019),
+            text("ウエウエテナンゴ", x: 0.567, y: 0.590, width: 0.175, height: 0.021),
+            text("生産者", x: 0.683, y: 0.562, width: 0.058, height: 0.017),
+            text("エルインヘルト農園", x: 0.547, y: 0.538, width: 0.194, height: 0.019),
+            text("標高", x: 0.703, y: 0.510, width: 0.039, height: 0.017),
+            text("1500-1900m", x: 0.592, y: 0.485, width: 0.150, height: 0.019),
+            text("品種", x: 0.703, y: 0.458, width: 0.039, height: 0.019),
+            text("カトゥアイ", x: 0.631, y: 0.435, width: 0.108, height: 0.019),
+            text("精選", x: 0.703, y: 0.408, width: 0.042, height: 0.017),
+            text("ウォッシュド", x: 0.617, y: 0.385, width: 0.125, height: 0.017),
+            text("焙煎良", x: 0.683, y: 0.358, width: 0.058, height: 0.017),
+            text("ミディアムライト", x: 0.572, y: 0.333, width: 0.169, height: 0.019),
+            text("小川珈琲", x: 0.298, y: 0.212, width: 0.031, height: 0.080),
+            text("Aroma", x: 0.497, y: 0.277, width: 0.061, height: 0.013),
+            text("香り1", x: 0.592, y: 0.277, width: 0.078, height: 0.015),
+            text("Bitterness 苦味 1", x: 0.497, y: 0.256, width: 0.172, height: 0.015),
+            text("Acidity", x: 0.497, y: 0.235, width: 0.064, height: 0.015),
+            text("俊味一", x: 0.592, y: 0.238, width: 0.078, height: 0.015),
+            text("Body", x: 0.497, y: 0.215, width: 0.050, height: 0.015),
+            text("コクー", x: 0.592, y: 0.219, width: 0.078, height: 0.013),
+            text("コーヒー豆はQRコードから購入いただけます。", x: 0.303, y: 0.192, width: 0.317, height: 0.015),
+        ]
+    }
+
+    @Test func 実機で読んだ小川珈琲のカードから項目を取り出す() {
+        let fields = CardParser.parse(ogawaCard)
+
+        #expect(fields == CardFields(
+            origin: "グアテマラ", region: "ウエウエテナンゴ", farm: "エルインヘルト農園", variety: "カトゥアイ",
+            process: "ウォッシュド", altitude: "1500-1900m", tastingNotes: nil,
+            // ミディアムライトは中間の焙煎度なので入れない
+            roast: nil
+        ))
     }
 }
