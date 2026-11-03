@@ -11,7 +11,8 @@ enum GeminiCardAPI {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(RequestBody(
             model: model,
-            input: [.text(instruction), .jpeg(image)]
+            input: [.text(instruction), .jpeg(image)],
+            responseFormat: .cardFields
         ))
         return request
     }
@@ -31,8 +32,72 @@ enum GeminiCardAPI {
     private struct RequestBody: Encodable {
         let model: String
         let input: [InputContent]
+        let responseFormat: ResponseFormat
         /// カードの写真を Google 側に残さない
         let store = false
+
+        enum CodingKeys: String, CodingKey {
+            case model, input, store
+            case responseFormat = "response_format"
+        }
+    }
+
+    /// 焙煎度の答えの選択肢。unknown は「書かれていない・中間で決められない」
+    static let roastChoices = ["light", "medium", "mediumDark", "dark", "unknown"]
+
+    /// 答えの形（JSON スキーマ）
+    private struct ResponseFormat: Encodable {
+        let type = "text"
+        let mimeType = "application/json"
+        let schema: Schema
+
+        enum CodingKeys: String, CodingKey {
+            case type, schema
+            case mimeType = "mime_type"
+        }
+
+        static let cardFields: Self = {
+            let texts: [(key: String, description: String)] = [
+                ("origin", "生産国"),
+                ("region", "生産国より細かい産地（地域）"),
+                ("farm", "農園・生産者"),
+                ("variety", "品種"),
+                ("process", "精製方法"),
+                ("altitude", "標高"),
+                ("tasting_notes", "テイスティングノート・フレーバー（店の説明にある風味）"),
+            ]
+            var properties = Dictionary(uniqueKeysWithValues: texts.map {
+                ($0.key, Property(type: .nullableString, description: $0.description))
+            })
+            properties["roast"] = Property(type: .string, description: "焙煎度", enum: roastChoices)
+            return ResponseFormat(schema: Schema(properties: properties, required: texts.map(\.key) + ["roast"]))
+        }()
+    }
+
+    private struct Schema: Encodable {
+        let type = "object"
+        let properties: [String: Property]
+        let required: [String]
+    }
+
+    private struct Property: Encodable {
+        let type: PropertyType
+        let description: String
+        var `enum`: [String]? = nil
+    }
+
+    private enum PropertyType: Encodable {
+        case string
+        /// 書かれていなければ null
+        case nullableString
+
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.singleValueContainer()
+            switch self {
+            case .string: try container.encode("string")
+            case .nullableString: try container.encode(["string", "null"])
+            }
+        }
     }
 
     private struct InputContent: Encodable {

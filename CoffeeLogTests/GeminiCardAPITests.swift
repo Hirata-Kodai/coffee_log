@@ -6,7 +6,7 @@ import Testing
 // - [x] interactions に POST し、API キーはヘッダーで送る
 // - [x] 本文にモデル名を入れ、やり取りを Google 側に保存しない（store: false）
 // - [x] 指示文とカードの画像（base64 の JPEG）を送る
-// - [ ] 答えの形（JSON スキーマ）で 8 項目を求め、焙煎度は 4 段階か null に限る
+// - [x] 答えの形（JSON スキーマ）で 8 項目を求め、焙煎度は 4 段階か unknown に限る
 // - [ ] レスポンスの model_output の JSON から項目を取り出す（thought は読み飛ばす）
 // - [ ] 空文字の項目は nil にする
 // - [ ] 焙煎度が 4 段階のどれでもなければ nil
@@ -46,5 +46,22 @@ struct GeminiCardAPITests {
         #expect(input[1]["type"] as? String == "image")
         #expect(input[1]["mime_type"] as? String == "image/jpeg")
         #expect(input[1]["data"] as? String == image.base64EncodedString())
+    }
+
+    @Test func 答えの形で8項目を求め焙煎度は4段階かunknownに限る() throws {
+        let body = try body(GeminiCardAPI.request(image: image, apiKey: "test-key", model: "gemini-test"))
+        let format = try #require(body["response_format"] as? [String: Any])
+        let schema = try #require(format["schema"] as? [String: Any])
+        let properties = try #require(schema["properties"] as? [String: [String: Any]])
+
+        #expect(format["type"] as? String == "text")
+        #expect(format["mime_type"] as? String == "application/json")
+        #expect(schema["type"] as? String == "object")
+        let keys = ["origin", "region", "farm", "variety", "process", "altitude", "tasting_notes", "roast"]
+        #expect(Set(properties.keys) == Set(keys))
+        #expect(Set(schema["required"] as? [String] ?? []) == Set(keys))
+        #expect(properties["farm"]?["type"] as? [String] == ["string", "null"])
+        #expect(properties["roast"]?["type"] as? String == "string")
+        #expect(properties["roast"]?["enum"] as? [String] == ["light", "medium", "mediumDark", "dark", "unknown"])
     }
 }
