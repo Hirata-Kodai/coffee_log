@@ -122,12 +122,28 @@ enum GeminiCardAPI {
 }
 
 extension GeminiCardAPI {
+    enum ResponseError: Error, Equatable {
+        /// やり取りが完了していない（failed など）
+        case notCompleted(status: String)
+        /// 答え（model_output）がない
+        case noAnswer
+        /// 答えが求めた形の JSON でない
+        case invalidAnswer
+    }
+
     /// レスポンスから、モデルの答え（model_output の JSON）を読んで項目にする
     static func fields(from data: Data) throws -> CardFields {
         let interaction = try JSONDecoder().decode(Interaction.self, from: data)
+        guard interaction.status == "completed" else {
+            throw ResponseError.notCompleted(status: interaction.status)
+        }
         let output = interaction.steps?.first { $0.type == "model_output" }
-        let text = output?.content?.first { $0.type == "text" }?.text ?? ""
-        let answer = try JSONDecoder().decode(Answer.self, from: Data(text.utf8))
+        guard let text = output?.content?.first(where: { $0.type == "text" })?.text else {
+            throw ResponseError.noAnswer
+        }
+        guard let answer = try? JSONDecoder().decode(Answer.self, from: Data(text.utf8)) else {
+            throw ResponseError.invalidAnswer
+        }
         // 空文字や空白だけの値は「読めなかった」と同じに扱う
         return CardFields(
             origin: answer.origin?.nilIfBlank,

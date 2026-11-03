@@ -10,7 +10,7 @@ import Testing
 // - [x] レスポンスの model_output の JSON から項目を取り出す（thought は読み飛ばす）
 // - [x] 空文字の項目は nil にする
 // - [x] 焙煎度が 4 段階のどれでもなければ nil
-// - [ ] 完了していない、答えがない、答えが JSON でないときはエラー
+// - [x] 完了していない、答えがない、答えが JSON でないときはエラー
 struct GeminiCardAPITests {
     private let image = Data([0xFF, 0xD8, 0xFF, 0x01])
 
@@ -112,5 +112,29 @@ struct GeminiCardAPITests {
             """)
 
         #expect(try GeminiCardAPI.fields(from: data).roast == nil)
+    }
+
+    @Test func 完了していなければエラー() {
+        let data = response(status: "failed", answer: "{}")
+
+        #expect(throws: GeminiCardAPI.ResponseError.notCompleted(status: "failed")) {
+            try GeminiCardAPI.fields(from: data)
+        }
+    }
+
+    @Test func 答えがなければエラー() {
+        let data = Data(#"{"status":"completed","steps":[{"signature":"EoEE","type":"thought"}]}"#.utf8)
+
+        #expect(throws: GeminiCardAPI.ResponseError.noAnswer) {
+            try GeminiCardAPI.fields(from: data)
+        }
+    }
+
+    @Test func 答えがJSONでなければエラー() {
+        let data = response(answer: "カードが読めませんでした")
+
+        #expect(throws: GeminiCardAPI.ResponseError.invalidAnswer) {
+            try GeminiCardAPI.fields(from: data)
+        }
     }
 }
