@@ -5,13 +5,17 @@ struct CardScanResult: Equatable {
     enum Source: Equatable {
         /// Gemini で読んだ
         case gemini
+        /// Gemini が失敗したので、端末内の読み取りに切り替えた
+        case onDeviceFallback
+        /// Gemini が使えない（API キーがない）ので、端末内で読んだ
+        case onDevice
     }
 
     let fields: CardFields
     let source: Source
 }
 
-/// 豆のカードを Gemini で読む
+/// 豆のカードを Gemini で読む。失敗したら端末内の読み取りに切り替える
 struct CardScanner {
     /// Gemini での読み取り。API キーがなければ nil
     var gemini: ((UIImage) async throws -> CardFields)?
@@ -19,6 +23,14 @@ struct CardScanner {
     var onDevice: (UIImage) async throws -> CardFields
 
     func read(_ image: UIImage) async throws -> CardScanResult {
-        CardScanResult(fields: try await gemini!(image), source: .gemini)
+        guard let gemini else {
+            return CardScanResult(fields: try await onDevice(image), source: .onDevice)
+        }
+        do {
+            return CardScanResult(fields: try await gemini(image), source: .gemini)
+        } catch {
+            // 通信できない、上限に達した、答えが読めないなど
+            return CardScanResult(fields: try await onDevice(image), source: .onDeviceFallback)
+        }
     }
 }
