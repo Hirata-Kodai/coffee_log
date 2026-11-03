@@ -18,6 +18,7 @@
 ## 技術構成
 
 - SwiftUI + SwiftData（端末内保存のみ。バックエンド・iCloud 同期なし）
+- 例外として、豆のカードの読み取りだけ外部 API（Gemini の Interactions API）にカードの画像を送る。API キーがない・失敗したときは端末内の読み取り（Vision ＋見出し語）に切り替える
 - iOS 26 以降、iPhone のみ、縦画面のみ
 - Xcode 27、Swift 5 言語モード、`SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`
 - テストは Swift Testing（`@Test` / `#expect`）
@@ -28,6 +29,8 @@
 - `CoffeeLog/`: アプリ本体。`CoffeeLogTests/`: ユニットテスト
 - どちらも Xcode のフォルダ同期（`PBXFileSystemSynchronizedRootGroup`）なので、フォルダにファイルを置けばターゲットに入る。pbxproj の編集は不要
 - `CoffeeLog.xcodeproj` は Xcode の新規作成ウィザードではなく、`../HelloWorld` の pbxproj から生成したもの（macOS / visionOS 向け設定は削除済み）
+- `Config/`: アプリのビルド設定。`App.xcconfig` をアプリのターゲットにつないであり（pbxproj を編集したのはここだけ）、git 管理外の `Secrets.xcconfig` を読み込む
+  - Gemini の API キーは `Config/Secrets.xcconfig` に書く（見本は `Secrets.example.xcconfig`）。キーをコミットしない・会話に貼らない
 
 ## テストの実行
 
