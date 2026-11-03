@@ -1,0 +1,12 @@
+// アプリ（CoffeeLog ターゲット）のビルド設定。
+// API キーなど git に入れない値は Secrets.xcconfig に書く（見本は Secrets.example.xcconfig）
+
+// 自動生成の Info.plist に、下の値を渡すための項目を足す
+INFOPLIST_FILE = Config/CoffeeLog-Info.plist
+
+// 豆のカードの読み取りに使う Gemini。キーが空なら端末内の読み取りだけを使う
+GEMINI_API_KEY =
+GEMINI_MODEL = gemini-3.8-flash
+
+// ファイルがなければ読み込まない（キーなしでもビルドできる）
+#include? "Secrets.xcconfig"
