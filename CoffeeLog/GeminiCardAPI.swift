@@ -1,6 +1,7 @@
 import Foundation
+import UIKit
 
-/// Gemini（Interactions API）に豆のカードの画像を送り、読み取った項目を受け取る。通信そのものは呼び出し側で行う
+/// Gemini（Interactions API）に豆のカードの画像を送り、読み取った項目を受け取る
 enum GeminiCardAPI {
     static let endpoint = URL(string: "https://generativelanguage.googleapis.com/v1beta/interactions")!
 
@@ -189,5 +190,24 @@ extension GeminiCardAPI {
             case origin, region, farm, variety, process, altitude, roast
             case tastingNotes = "tasting_notes"
         }
+    }
+}
+
+extension GeminiCardAPI {
+    enum NetworkError: Error {
+        case unreadableImage
+        /// 200 以外（キーの誤り、上限到達など）
+        case httpStatus(Int)
+    }
+
+    /// 画像を縮小して Gemini に送り、項目を受け取る
+    static func read(_ image: UIImage, config: GeminiConfig) async throws -> CardFields {
+        guard let jpeg = PhotoResizer.jpegData(from: image) else { throw NetworkError.unreadableImage }
+        let request = try request(image: jpeg, apiKey: config.apiKey, model: config.model)
+        let (data, response) = try await URLSession.shared.data(for: request)
+        if let http = response as? HTTPURLResponse, http.statusCode != 200 {
+            throw NetworkError.httpStatus(http.statusCode)
+        }
+        return try fields(from: data)
     }
 }

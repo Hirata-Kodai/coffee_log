@@ -453,14 +453,16 @@ private struct CardScanRow: View {
         isReading = true
         defer { isReading = false }
         do {
-            let card = try await CardReader.read(from: image)
-            let filled = draft.fillBlanks(from: card)
+            let result = try await CardScanner.live.read(image)
+            let filled = draft.fillBlanks(from: result.fields)
+            // Gemini に接続できず端末内で読んだときは、精度が落ちることを伝える
+            let note = result.source == .onDeviceFallback ? "（Gemini に接続できなかったため、端末内で読み取りました）" : ""
             if filled > 0 {
-                message = "\(filled) 項目を入力しました。内容を確かめてください。"
+                message = "\(filled) 項目を入力しました。内容を確かめてください。\(note)"
                 // 読み取る項目の多くは詳細欄にあるので開いておく
                 showsDetails = true
             } else {
-                message = "空欄に入れられる項目が見つかりませんでした。"
+                message = "空欄に入れられる項目が見つかりませんでした。\(note)"
             }
         } catch {
             message = "画像から文字を読み取れませんでした。"

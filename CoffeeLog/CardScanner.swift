@@ -30,7 +30,21 @@ struct CardScanner {
             return CardScanResult(fields: try await gemini(image), source: .gemini)
         } catch {
             // 通信できない、上限に達した、答えが読めないなど
+            #if DEBUG
+            print("[CardScanner] Gemini で読めなかったため端末内で読みます:", error)
+            #endif
             return CardScanResult(fields: try await onDevice(image), source: .onDeviceFallback)
         }
+    }
+}
+
+extension CardScanner {
+    /// アプリで使う読み取り。API キーが Info.plist にあれば Gemini を使う
+    static var live: CardScanner {
+        let config = GeminiConfig(info: Bundle.main.infoDictionary ?? [:])
+        return CardScanner(
+            gemini: config.map { config in { image in try await GeminiCardAPI.read(image, config: config) } },
+            onDevice: { image in try await CardReader.read(from: image) }
+        )
     }
 }
