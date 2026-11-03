@@ -9,6 +9,14 @@ enum GeminiCardAPI {
         request.httpMethod = "POST"
         request.setValue(apiKey, forHTTPHeaderField: "x-goog-api-key")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(RequestBody(model: model))
         return request
+    }
+
+    /// Interactions API に送る本文
+    private struct RequestBody: Encodable {
+        let model: String
+        /// カードの写真を Google 側に残さない
+        let store = false
     }
 }

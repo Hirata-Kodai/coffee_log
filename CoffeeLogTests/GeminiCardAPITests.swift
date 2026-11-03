@@ -4,7 +4,7 @@ import Testing
 
 // TODO（Gemini に豆のカードの画像を送って項目を受け取る）
 // - [x] interactions に POST し、API キーはヘッダーで送る
-// - [ ] 本文にモデル名を入れ、やり取りを Google 側に保存しない（store: false）
+// - [x] 本文にモデル名を入れ、やり取りを Google 側に保存しない（store: false）
 // - [ ] 指示文とカードの画像（base64 の JPEG）を送る
 // - [ ] 答えの形（JSON スキーマ）で 8 項目を求め、焙煎度は 4 段階か null に限る
 // - [ ] レスポンスの model_output の JSON から項目を取り出す（thought は読み飛ばす）
@@ -14,6 +14,12 @@ import Testing
 struct GeminiCardAPITests {
     private let image = Data([0xFF, 0xD8, 0xFF, 0x01])
 
+    /// リクエストの本文を JSON として読む
+    private func body(_ request: URLRequest) throws -> [String: Any] {
+        let data = try #require(request.httpBody)
+        return try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+    }
+
     @Test func interactionsにPOSTしAPIキーはヘッダーで送る() throws {
         let request = try GeminiCardAPI.request(image: image, apiKey: "test-key", model: "gemini-test")
 
@@ -21,5 +27,12 @@ struct GeminiCardAPITests {
         #expect(request.httpMethod == "POST")
         #expect(request.value(forHTTPHeaderField: "x-goog-api-key") == "test-key")
         #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
+    }
+
+    @Test func 本文にモデル名を入れGoogle側に保存しない() throws {
+        let body = try body(GeminiCardAPI.request(image: image, apiKey: "test-key", model: "gemini-test"))
+
+        #expect(body["model"] as? String == "gemini-test")
+        #expect(body["store"] as? Bool == false)
     }
 }
