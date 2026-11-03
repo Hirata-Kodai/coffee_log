@@ -5,7 +5,7 @@ import Testing
 // TODO（Gemini に豆のカードの画像を送って項目を受け取る）
 // - [x] interactions に POST し、API キーはヘッダーで送る
 // - [x] 本文にモデル名を入れ、やり取りを Google 側に保存しない（store: false）
-// - [ ] 指示文とカードの画像（base64 の JPEG）を送る
+// - [x] 指示文とカードの画像（base64 の JPEG）を送る
 // - [ ] 答えの形（JSON スキーマ）で 8 項目を求め、焙煎度は 4 段階か null に限る
 // - [ ] レスポンスの model_output の JSON から項目を取り出す（thought は読み飛ばす）
 // - [ ] 空文字の項目は nil にする
@@ -34,5 +34,17 @@ struct GeminiCardAPITests {
 
         #expect(body["model"] as? String == "gemini-test")
         #expect(body["store"] as? Bool == false)
+    }
+
+    @Test func 指示文とカードの画像をbase64のJPEGで送る() throws {
+        let body = try body(GeminiCardAPI.request(image: image, apiKey: "test-key", model: "gemini-test"))
+        let input = try #require(body["input"] as? [[String: Any]])
+
+        #expect(input.count == 2)
+        #expect(input[0]["type"] as? String == "text")
+        #expect((input[0]["text"] as? String)?.contains("豆のカード") == true)
+        #expect(input[1]["type"] as? String == "image")
+        #expect(input[1]["mime_type"] as? String == "image/jpeg")
+        #expect(input[1]["data"] as? String == image.base64EncodedString())
     }
 }
