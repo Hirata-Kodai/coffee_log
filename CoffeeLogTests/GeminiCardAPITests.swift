@@ -8,8 +8,8 @@ import Testing
 // - [x] 指示文とカードの画像（base64 の JPEG）を送る
 // - [x] 答えの形（JSON スキーマ）で 8 項目を求め、焙煎度は 4 段階か unknown に限る
 // - [x] レスポンスの model_output の JSON から項目を取り出す（thought は読み飛ばす）
-// - [ ] 空文字の項目は nil にする
-// - [ ] 焙煎度が 4 段階のどれでもなければ nil
+// - [x] 空文字の項目は nil にする
+// - [x] 焙煎度が 4 段階のどれでもなければ nil
 // - [ ] 完了していない、答えがない、答えが JSON でないときはエラー
 struct GeminiCardAPITests {
     private let image = Data([0xFF, 0xD8, 0xFF, 0x01])
@@ -93,5 +93,24 @@ struct GeminiCardAPITests {
             origin: "グアテマラ", region: "ウエウエテナンゴ", farm: "エルインヘルト農園", variety: "カトゥアイ",
             process: "ウォッシュド", altitude: "1500-1900m", tastingNotes: "チョコレート、オレンジ", roast: .medium
         ))
+    }
+
+    @Test func 空文字の項目はnilにする() throws {
+        let data = response(answer: """
+            {"origin":"","region":"  ","farm":null,"variety":"カトゥアイ","process":null,"altitude":null,"tasting_notes":null,"roast":"unknown"}
+            """)
+
+        let fields = try GeminiCardAPI.fields(from: data)
+
+        #expect(fields == CardFields(variety: "カトゥアイ"))
+    }
+
+    @Test(arguments: ["unknown", "mediumLight", "シティ"])
+    func 焙煎度が4段階のどれでもなければnil(roast: String) throws {
+        let data = response(answer: """
+            {"origin":null,"region":null,"farm":null,"variety":null,"process":null,"altitude":null,"tasting_notes":null,"roast":"\(roast)"}
+            """)
+
+        #expect(try GeminiCardAPI.fields(from: data).roast == nil)
     }
 }

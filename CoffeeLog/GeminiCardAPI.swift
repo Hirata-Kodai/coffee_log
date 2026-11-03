@@ -128,14 +128,16 @@ extension GeminiCardAPI {
         let output = interaction.steps?.first { $0.type == "model_output" }
         let text = output?.content?.first { $0.type == "text" }?.text ?? ""
         let answer = try JSONDecoder().decode(Answer.self, from: Data(text.utf8))
+        // 空文字や空白だけの値は「読めなかった」と同じに扱う
         return CardFields(
-            origin: answer.origin,
-            region: answer.region,
-            farm: answer.farm,
-            variety: answer.variety,
-            process: answer.process,
-            altitude: answer.altitude,
-            tastingNotes: answer.tastingNotes,
+            origin: answer.origin?.nilIfBlank,
+            region: answer.region?.nilIfBlank,
+            farm: answer.farm?.nilIfBlank,
+            variety: answer.variety?.nilIfBlank,
+            process: answer.process?.nilIfBlank,
+            altitude: answer.altitude?.nilIfBlank,
+            tastingNotes: answer.tastingNotes?.nilIfBlank,
+            // unknown など 4 段階以外は入れない
             roast: answer.roast.flatMap(Roast.init(rawValue:))
         )
     }
