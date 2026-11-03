@@ -120,3 +120,56 @@ enum GeminiCardAPI {
         }
     }
 }
+
+extension GeminiCardAPI {
+    /// レスポンスから、モデルの答え（model_output の JSON）を読んで項目にする
+    static func fields(from data: Data) throws -> CardFields {
+        let interaction = try JSONDecoder().decode(Interaction.self, from: data)
+        let output = interaction.steps?.first { $0.type == "model_output" }
+        let text = output?.content?.first { $0.type == "text" }?.text ?? ""
+        let answer = try JSONDecoder().decode(Answer.self, from: Data(text.utf8))
+        return CardFields(
+            origin: answer.origin,
+            region: answer.region,
+            farm: answer.farm,
+            variety: answer.variety,
+            process: answer.process,
+            altitude: answer.altitude,
+            tastingNotes: answer.tastingNotes,
+            roast: answer.roast.flatMap(Roast.init(rawValue:))
+        )
+    }
+
+    private struct Interaction: Decodable {
+        let status: String
+        let steps: [Step]?
+    }
+
+    /// 思考（thought）や答え（model_output）などの 1 段階
+    private struct Step: Decodable {
+        let type: String
+        let content: [Content]?
+    }
+
+    private struct Content: Decodable {
+        let type: String
+        let text: String?
+    }
+
+    /// 答えの JSON（キーは送ったスキーマのもの）
+    private struct Answer: Decodable {
+        let origin: String?
+        let region: String?
+        let farm: String?
+        let variety: String?
+        let process: String?
+        let altitude: String?
+        let tastingNotes: String?
+        let roast: String?
+
+        enum CodingKeys: String, CodingKey {
+            case origin, region, farm, variety, process, altitude, roast
+            case tastingNotes = "tasting_notes"
+        }
+    }
+}

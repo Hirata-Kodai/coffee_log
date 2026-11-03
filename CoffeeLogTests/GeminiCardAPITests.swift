@@ -7,7 +7,7 @@ import Testing
 // - [x] 本文にモデル名を入れ、やり取りを Google 側に保存しない（store: false）
 // - [x] 指示文とカードの画像（base64 の JPEG）を送る
 // - [x] 答えの形（JSON スキーマ）で 8 項目を求め、焙煎度は 4 段階か unknown に限る
-// - [ ] レスポンスの model_output の JSON から項目を取り出す（thought は読み飛ばす）
+// - [x] レスポンスの model_output の JSON から項目を取り出す（thought は読み飛ばす）
 // - [ ] 空文字の項目は nil にする
 // - [ ] 焙煎度が 4 段階のどれでもなければ nil
 // - [ ] 完了していない、答えがない、答えが JSON でないときはエラー
@@ -63,5 +63,35 @@ struct GeminiCardAPITests {
         #expect(properties["farm"]?["type"] as? [String] == ["string", "null"])
         #expect(properties["roast"]?["type"] as? String == "string")
         #expect(properties["roast"]?["enum"] as? [String] == ["light", "medium", "mediumDark", "dark", "unknown"])
+    }
+
+    /// 2026-11-03 に実際の API から返ったレスポンスの形（thought のあとに model_output）。
+    /// 答えの JSON（text）だけをカードの 8 項目に置き換えている
+    private func response(status: String = "completed", answer: String) -> Data {
+        // 答えの JSON を、レスポンスの JSON の文字列として埋め込めるようにエスケープする
+        let escaped = answer
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+            .replacingOccurrences(of: "\n", with: "\\n")
+        return Data("""
+            {"status":"\(status)","usage":{"total_tokens":147},"created":"2026-11-03T08:46:01Z",
+             "steps":[{"signature":"EoEE","type":"thought"},
+                      {"content":[{"text":"\(escaped)","type":"text"}],"type":"model_output"}],
+             "object":"interaction","model":"gemini-3.8-flash"}
+            """.utf8)
+    }
+
+    @Test func レスポンスのmodel_outputのJSONから項目を取り出す() throws {
+        let data = response(answer: """
+            {"origin":"グアテマラ","region":"ウエウエテナンゴ","farm":"エルインヘルト農園","variety":"カトゥアイ",
+             "process":"ウォッシュド","altitude":"1500-1900m","tasting_notes":"チョコレート、オレンジ","roast":"medium"}
+            """)
+
+        let fields = try GeminiCardAPI.fields(from: data)
+
+        #expect(fields == CardFields(
+            origin: "グアテマラ", region: "ウエウエテナンゴ", farm: "エルインヘルト農園", variety: "カトゥアイ",
+            process: "ウォッシュド", altitude: "1500-1900m", tastingNotes: "チョコレート、オレンジ", roast: .medium
+        ))
     }
 }
