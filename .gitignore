@@ -3,3 +3,6 @@ xcuserdata/
 DerivedData/
 build/
 *.xcuserstate
+
+# API キーなどの秘密の値（見本は Config/Secrets.example.xcconfig）
+Config/Secrets.xcconfig

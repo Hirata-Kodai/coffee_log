@@ -27,6 +27,7 @@
 /* Begin PBXFileReference section */
 		000000000000000000000120 /* CoffeeLog.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CoffeeLog.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000000220 /* CoffeeLogTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CoffeeLogTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		000000000000000000000310 /* App.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config/App.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -61,6 +62,7 @@
 			children = (
 				000000000000000000000010 /* CoffeeLog */,
 				000000000000000000000030 /* CoffeeLogTests */,
+				000000000000000000000310 /* App.xcconfig */,
 				000000000000000000000020 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -316,6 +318,7 @@
 		};
 		000000000000000111000000 /* Debug configuration for PBXNativeTarget "CoffeeLog" */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 000000000000000000000310 /* App.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -351,6 +354,7 @@
 		};
 		000000000000000112000000 /* Release configuration for PBXNativeTarget "CoffeeLog" */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 000000000000000000000310 /* App.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
